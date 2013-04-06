@@ -1,6 +1,12 @@
+{% extends "page.html" %}
+
+{% block title %} - Login{% endblock %}
+
+{% block content %}
 <form action="{% url cses.views.login %}" method="POST">
 {% csrf_token %}
 {{ form.username }}
 {{ form.password }}
 <input type="submit" />
 </form>
+{% endblock %}
