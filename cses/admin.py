@@ -4,15 +4,14 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
 admin.site.register(Contest)
+admin.site.register(Language)
 
-class InputInline(admin.StackedInline):
-	model = Input
+class TestCaseInline(admin.StackedInline):
+	model = TestCase
 class TaskAdmin(admin.ModelAdmin):
-	inlines = [InputInline]
+	inlines = [TestCaseInline]
 
 admin.site.register(Task, TaskAdmin)
-
-
 
 # Make user admin allow filtering by groups.
 class MyUserAdmin(UserAdmin):

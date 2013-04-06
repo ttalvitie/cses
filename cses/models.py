@@ -1,15 +1,26 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
+from django.core.files.storage import FileSystemStorage
+
+from django.conf import settings
+fs = FileSystemStorage(location=settings.CSES_FILES_DIR)
 
 class Task(models.Model):
 	name = models.CharField(max_length=255, unique=True)
+	evaluator = models.FileField(storage=fs, upload_to='task_evaluators/')
 	
 	def __unicode__(self):
 		return self.name
 
-class Input(models.Model):
+class TestCase(models.Model):
 	task = models.ForeignKey(Task)
-	stuff = models.TextField() # placeholder
+	input = models.FileField(storage=fs, upload_to='testcase_inputs/')
+	output = models.FileField(storage=fs, upload_to='testcase_outputs/')
+
+class Language(models.Model):
+	name = models.CharField(max_length=255, unique=True)
+	compiler = models.FileField(storage=fs, upload_to='language_compilers/')
+	runner = models.FileField(storage=fs, upload_to='language_runners/')
 
 class Contest(models.Model):
 	name = models.CharField(max_length=255, unique=True)
@@ -22,10 +33,17 @@ class Contest(models.Model):
 		return self.name
 
 class Submission(models.Model):
-	pass
+	task = models.ForeignKey(Task)
+	contest = models.ForeignKey(Contest)
+	user = models.ForeignKey(User)
+	language = models.ForeignKey(Language)
+	source = models.FileField(storage=fs, upload_to='submission_sources/')
+	binary = models.FileField(storage=fs, upload_to='submission_binaries/', null=True)
 
 class Result(models.Model):
-	pass
-
-class Language(models.Model):
-	pass
+	submission = models.ForeignKey(Submission)
+	testcase = models.ForeignKey(TestCase)
+	result = models.IntegerField()
+	
+	class Meta:
+		unique_together = ('submission', 'testcase')

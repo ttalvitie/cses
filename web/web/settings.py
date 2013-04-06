@@ -56,6 +56,12 @@ MEDIA_ROOT = ''
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = ''
 
+# Directory for CSES files.
+CSES_FILES_DIR = 'cses_files/'
+
+# Maximum size for submissions in bytes.
+CSES_MAX_SUBMISSION_SIZE = 100 * 1024
+
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
