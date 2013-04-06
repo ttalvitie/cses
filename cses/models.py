@@ -1,13 +1,27 @@
 from django.db import models
-
-class Contest(models.Model):
-	pass
+from django.contrib.auth.models import User, Group
 
 class Task(models.Model):
-	pass
+	name = models.CharField(max_length=255, unique=True)
+	
+	def __unicode__(self):
+		return self.name
 
 class Input(models.Model):
-	pass
+	task = models.ForeignKey(Task)
+	stuff = models.TextField() # placeholder
+	
+	class Meta:
+		ordering = ('id',)
+
+class Contest(models.Model):
+	name = models.CharField(max_length=255, unique=True)
+	users = models.ManyToManyField(User, blank=True)
+	groups = models.ManyToManyField(Group, blank=True)
+	tasks = models.ManyToManyField(Task, blank=True)
+	
+	def __unicode__(self):
+		return self.name
 
 class Submission(models.Model):
 	pass
