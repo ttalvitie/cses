@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 admin.site.register(Contest)
 admin.site.register(Language)
+admin.site.register(Submission)
 
 class TestCaseInline(admin.StackedInline):
 	model = TestCase

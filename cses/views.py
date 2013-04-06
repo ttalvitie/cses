@@ -5,6 +5,7 @@ from django.contrib import auth
 from django.core.urlresolvers import reverse
 
 from utils import *
+from django.conf import settings
 
 class LoginForm(forms.Form):
 	username = forms.CharField()
@@ -39,7 +40,8 @@ def index(request):
 	
 class ContestSubmitForm(forms.Form):
 	task = forms.ModelChoiceField(queryset=Task.objects.none(), required=True)
-	file = forms.FileField() # TODO: length
+	file = forms.FileField()
+	language = forms.ModelChoiceField(queryset=Language.objects.all(), required=True)
 	
 	def __init__(self, contest, *args, **kwargs):
 		super(ContestSubmitForm, self).__init__(*args, **kwargs)
@@ -49,9 +51,17 @@ class ContestSubmitForm(forms.Form):
 def contest(request, contest):
 	if request.method == 'POST':
 		form = ContestSubmitForm(contest, request.POST, request.FILES)
-		if(form.is_valid()):
-			for chunk in form.cleaned_data['file'].chunks():
-				print "TASK SUBMIT STUB"
+		if(form.is_valid() and form.cleaned_data['file']._size <= settings.CSES_MAX_SUBMISSION_SIZE):
+			# TODO: error reporting
+			submission = Submission(
+				task=form.cleaned_data['task'],
+				source=form.cleaned_data['file'],
+				language=form.cleaned_data['language'],
+				contest=contest,
+				user=request.user
+			)
+			submission.save()
+
 	else:
 		form = ContestSubmitForm(contest)
 	
