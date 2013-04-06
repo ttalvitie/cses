@@ -5,6 +5,8 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 
+from contest import *
+
 class LoginForm(forms.Form):
 	username = forms.CharField()
 	password = forms.CharField(widget=forms.PasswordInput)
@@ -26,4 +28,7 @@ def login(request):
 def index(request):
 	if not request.user.is_authenticated():
 		return redirect('cses.views.login')
-	return HttpResponse("Index")
+	
+	contests = getUserContests(request.user)
+	
+	return HttpResponse("Contests: " + ", ".join([x.name for x in contests]))

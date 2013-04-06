@@ -10,15 +10,13 @@ class Task(models.Model):
 class Input(models.Model):
 	task = models.ForeignKey(Task)
 	stuff = models.TextField() # placeholder
-	
-	class Meta:
-		ordering = ('id',)
 
 class Contest(models.Model):
 	name = models.CharField(max_length=255, unique=True)
 	users = models.ManyToManyField(User, blank=True)
 	groups = models.ManyToManyField(Group, blank=True)
 	tasks = models.ManyToManyField(Task, blank=True)
+	active = models.BooleanField()
 	
 	def __unicode__(self):
 		return self.name
