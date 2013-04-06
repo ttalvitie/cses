@@ -1,11 +1,5 @@
 from django.db import models
 
-class User(models.Model):
-	pass
-
-class Group(models.Model):
-	pass
-
 class Contest(models.Model):
 	pass
 
@@ -19,4 +13,7 @@ class Submission(models.Model):
 	pass
 
 class Result(models.Model):
+	pass
+
+class Language(models.Model):
 	pass

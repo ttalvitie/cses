@@ -1,0 +1,6 @@
+<form action="{% url cses.views.login %}" method="POST">
+{% csrf_token %}
+{{ form.username }}
+{{ form.password }}
+<input type="submit" />
+</form>
