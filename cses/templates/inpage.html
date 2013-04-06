@@ -1,10 +1,10 @@
 {% extends "page.html" %}
 
 {% block content %}
-<form action="{% url cses.views.logout %}" method="POST" style="display: inline;">
+<form action="{% url "cses.views.logout" %}" method="POST" style="display: inline;">
 {% csrf_token %}
 <p>
-	<a href="{% url cses.views.index %}">Contests</a>
+	<a href="{% url "cses.views.index" %}">Contests</a>
 	<a href="/admin/">Admin</a>
 	<input type="submit" value="Log out" />
 </p>
