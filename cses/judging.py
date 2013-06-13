@@ -38,6 +38,7 @@ class Master(Thread):
 
 print('Starting judge master thread')
 master = Master()
+master.daemon = True
 master.start()
 
 comparator = open('../judge/run/compare.sh')
@@ -147,3 +148,9 @@ class JudgeHost:
 		res = self.buf[:size]
 		self.buf = self.buf[size:]
 		return res
+
+	def ping(self):
+		print 'pinging'
+		self.sock.send('PING\n')
+		res = self.getLine()
+		return res=='PONG'

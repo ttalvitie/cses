@@ -60,3 +60,6 @@ class JudgeHost(models.Model):
 	name = models.CharField(max_length=255, unique=True)
 	host = models.CharField(max_length=255)
 	active = models.BooleanField()
+
+	def __unicode__(self):
+		return self.name
