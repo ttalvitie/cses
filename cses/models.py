@@ -5,6 +5,8 @@ from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 fs = FileSystemStorage(location=settings.CSES_FILES_DIR)
 
+#class File
+
 class Task(models.Model):
 	name = models.CharField(max_length=255, unique=True)
 	evaluator = models.FileField(storage=fs, upload_to='task_evaluators/')
@@ -21,6 +23,9 @@ class Language(models.Model):
 	name = models.CharField(max_length=255, unique=True)
 	compiler = models.FileField(storage=fs, upload_to='language_compilers/')
 	runner = models.FileField(storage=fs, upload_to='language_runners/')
+
+	def __unicode__(self):
+		return self.name
 
 class Contest(models.Model):
 	name = models.CharField(max_length=255, unique=True)
@@ -39,6 +44,7 @@ class Submission(models.Model):
 	language = models.ForeignKey(Language)
 	source = models.FileField(storage=fs, upload_to='submission_sources/')
 	binary = models.FileField(storage=fs, upload_to='submission_binaries/', null=True)
+	compileResult = models.TextField(null=True)
 
 class Result(models.Model):
 	submission = models.ForeignKey(Submission)
@@ -47,3 +53,8 @@ class Result(models.Model):
 	
 	class Meta:
 		unique_together = ('submission', 'testcase')
+
+class JudgeHost(models.Model):
+	name = models.CharField(max_length=255, unique=True)
+	host = models.CharField(max_length=255)
+	active = models.BooleanField()

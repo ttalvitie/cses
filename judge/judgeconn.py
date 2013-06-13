@@ -69,4 +69,4 @@ class Action(Thread):
 			return
 		size = int(res[1])
 		s.status = 'ok'
-		sock.output = s.j.getData(size)
+		s.output = s.j.getData(size)

@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 
 from utils import *
 from django.conf import settings
+import judging
 
 class LoginForm(forms.Form):
 	username = forms.CharField()
@@ -61,6 +62,7 @@ def contest(request, contest):
 				user=request.user
 			)
 			submission.save()
+			judging.master.addSubmission(submission)
 
 	else:
 		form = ContestSubmitForm(contest)

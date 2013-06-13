@@ -2,7 +2,6 @@
 from threading import *
 from socket import *
 import os.path
-import sha
 import tempfile
 import shutil
 import os
@@ -21,45 +20,36 @@ def getLine(s, buf):
 def hasFile(f):
 	return os.path.exists(f)
 
-def readFile(s, buf, size, check):
-	check = check.lower()
-	sh = sha.new()
-	try:
-		f = open(check, 'w')
+def readFile(s, buf, size, name):
+	dirname = os.path.dirname(name)
+	if dirname and not os.path.exists(dirname):
+		os.makedirs(dirname)
+	with open(name, 'w') as f:
 		count = 0
 		while count + len(buf) < size:
-			sh.update(buf)
+			count += len(buf)
 			f.write(buf)
 			buf = s.recv(1024)
 		remain = size-count
-		sh.update(buf[:remain])
 		f.write(buf[:remain])
-
-		if sh.hexdigest().lower()==check:
-			s.send('OK\n')
-		else:
-			print "checksum doesn't match:",check,sh.hexdigest().lower()
-			s.send('FAIL\n')
 		return buf[remain:]
-	finally:
-		if sh.hexdigest().lower()!=check:
-			os.remove(check)
 
 def runCommand(files):
 	# TODO: sandbox
 	try:
 		td = tempfile.mkdtemp()
-		for (name,check) in files:
-			if not os.path.exists(check):
+		for name in files:
+			if not os.path.exists(name):
 				return None
-			shutil.copyfile(check, os.path.join(td, name))
-		script = os.path.join(td, files[0][0])
-		print 'running',script
-		os.chmod(script, 0700)
-		proc = Popen([script], stdout=PIPE)
+			# TODO: could we avoid copying and just give read permissions to files?
+			shutil.copytree(name, os.path.join(td, name))
+		tfiles = [os.path.join(td, f) for f in files]
+		print 'running',tfiles
+		for f in tfiles:
+			os.chmod(f, 0700)
+		proc = Popen(tfiles, stdout=PIPE)
 		out = proc.communicate()[0]
 		return out
-#		os.system(script)
 	except OSError:
 		print 'Running script failed'
 	finally:
@@ -75,12 +65,11 @@ def handleLine(s, l, buf):
 		res = ' '.join((str(int(hasFile(x))) for x in parts[1:]))
 		s.send(res+'\n')
 	elif cmd=='SEND':
-		checksum = parts[1]
+		name = parts[1]
 		length = int(parts[2])
-		buf = readFile(s, buf, length, checksum)
+		buf = readFile(s, buf, length, name)
 	elif cmd=='RUN':
-		cnt = len(parts)/2
-		files = [(parts[2*i+1],parts[2*i+2]) for i in xrange(cnt)]
+		files = parts[1:]
 		out = runCommand(files)
 		if out:
 			s.send("OK "+str(len(out))+'\n'+out)
