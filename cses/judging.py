@@ -12,7 +12,7 @@ class Master(Thread):
 		Thread.__init__(self)
 		self.condition = Condition()
 		self.jobs = []
-		self.judges = list(models.JudgeHost.objects.all())
+		self.judges = [JudgeHost(j.host) for j in models.JudgeHost.objects.all()]
 
 	def run(self):
 		with self.condition:
@@ -33,15 +33,8 @@ class Master(Thread):
 	def addSubmission(self, submission):
 		with self.condition:
 			print 'New submission'
-			self.jobs.push(JudgeSubmission(self, submission))
+			self.jobs.append(JudgeSubmission(self, submission))
 			self.condition.notify()
-
-print('Starting judge master thread')
-master = Master()
-master.daemon = True
-master.start()
-
-comparator = open('../judge/run/compare.sh')
 
 class JudgeSubmission(Thread):
 	def __init__(self, master, submission):
@@ -53,29 +46,37 @@ class JudgeSubmission(Thread):
 	def run(self):
 		assert self.judge
 		language = self.submission.language
-		binary = self.judge.runScript([(language.compiler), self.submission.source])
-		self.submission.binary = binary
-		self.submission.compileResult = 'OK'
+		binary = self.judge.runScript([language.compiler, self.submission.source])
+		if not binary:
+			print 'FAILURE'
+			return
+		if 'binary' not in binary:
+			print 'Compiling failed', binary['log']
+			return
+		self.submission.binary.save('binary', ContentFile(binary['binary']))
+		self.submission.compileResult = binary['log'] if binary['log'] else 'OK'
 		self.submission.save()
 		task = self.submission.task
 
 		cases = models.TestCase.objects.filter(task=task)
 		for case in cases:
-			result = models.Result(submission=submission, testcase=case, result=-100)
+			result = models.Result(submission=self.submission, testcase=case, result=-100)
 			result.save()
-			runRes = self.judge.runScript(language.runner, binary, case.input)
-			result.stdout = ContentFile(runRes['stdout'])
-			result.stderr = ContentFile(runRes['stderr'])
-			status = int(result['status'])
+			runRes = self.judge.runScript([language.runner, self.submission.binary, case.input])
+			result.stdout.save('stdout', ContentFile(runRes['stdout']))
+			result.stderr.save('stderr', ContentFile(runRes['stderr']))
+			print 'stderr:',runRes['stderr']
+			status = int(runRes['status'])
 			if status<0:
 				result.result = status
 				result.save()
 				break
 			result.save()
-			compareRes = self.judge.runScript(comparator, case.output, result.stdout)
+			compareRes = self.judge.runScript([task.evaluator, case.output, result.stdout])
 			score = int(compareRes['result'])
 			result.result = score
 			result.save()
+			print 'judging file done with score',score
 			if score<0:
 				break
 
@@ -85,10 +86,8 @@ class JudgeSubmission(Thread):
 
 def sendFile(sock, filename, fileField):
 	""" Send contents of file to sock """
-	size = 0
-	sock.send('SEND '+filename+' '+str(size)+'\n')
-	with fileField.open('rb') as f:
-		sock.send(f.read())
+	sock.send('SEND '+filename+' '+str(fileField.size)+'\n')
+	sock.send(fileField.read())
 
 def remoteFileName(name):
 	mid = 'cses_files/'
@@ -97,9 +96,10 @@ def remoteFileName(name):
 	return name[pos:].replace(' ', '__')
 
 def filePath(f):
-	if hasattr(f, 'path'):
-		return f.path
-	return os.path.abspath(f.name)
+	return f.path
+#	if hasattr(f, 'path'):
+#		return f.path
+#	return os.path.abspath(f.name)
 
 class JudgeHost:
 	def __init__(self, addr):
@@ -111,18 +111,18 @@ class JudgeHost:
 		print 'running script',files
 		paths = map(filePath, files)
 		remotePaths = map(remoteFileName, paths)
-		msg = ' '.join(removePaths)
+		msg = ' '.join(remotePaths)
 		self.sock.send("HAS " + msg + '\n')
 		resline = self.getLine()
 		res = map(bool, map(int, resline.split(' ')))
-		print 'res',resline,res
+		print 'res',resline,res, len(files), len(res)
 		for i in xrange(len(files)):
 			if not res[i]:
 				f = files[i]
 				print 'sending file',f.path
 				sendFile(self.sock, remotePaths[i], f)
-				res = self.getLine()
-				if res!='OK':
+				line = self.getLine()
+				if line!='OK':
 					return
 #		msg = ' '.join([f[0]+' '+f[1] for f in files])
 		self.sock.send('RUN '+msg+'\n')
@@ -154,3 +154,9 @@ class JudgeHost:
 		self.sock.send('PING\n')
 		res = self.getLine()
 		return res=='PONG'
+
+
+print('Starting judge master thread')
+master = Master()
+master.daemon = True
+master.start()

@@ -40,26 +40,32 @@ def runCommand(files):
 	origDir = os.getcwd()
 	try:
 		td = tempfile.mkdtemp()
-		outdir = os.path.join(td, 'out')
-		os.mkdir(outdir)
-		os.chdir(outdir)
 		for name in files:
 			if not os.path.exists(name):
+				print 'Missing required file',name
 				return None
 			# TODO: could we avoid copying and just give read permissions to files?
-			shutil.copytree(name, os.path.join(td, name))
+#			print 'copying',name,'to',os.path.join(td,name)
+			dest = os.path.join(td, name)
+			destdir = os.path.dirname(dest)
+			if not os.path.exists(destdir):
+				os.makedirs(destdir)
+			shutil.copy(name, os.path.join(td, name))
 		tfiles = [os.path.join(td, f) for f in files]
 		print 'running',tfiles
 		for f in tfiles:
 			os.chmod(f, 0700)
+		outdir = os.path.join(td, 'out')
+		os.mkdir(outdir)
+		os.chdir(outdir)
 		proc = Popen(tfiles, stdout=PIPE)
 #		out = proc.communicate()[0]
 #		return out
 		proc.wait()
 		outfiles = [f for f in os.listdir(outdir) if os.path.isfile(f)]
 		return dict([(f,open(f,'r').read()) for f in outfiles])
-	except OSError:
-		print 'Running script failed'
+	except OSError as e:
+		print 'Running script failed',e
 	finally:
 		shutil.rmtree(td)
 		os.chdir(origDir)
@@ -77,10 +83,13 @@ def handleLine(s, l, buf):
 		name = parts[1]
 		length = int(parts[2])
 		buf = readFile(s, buf, length, name)
+		s.send('OK\n')
 	elif cmd=='RUN':
 		files = parts[1:]
+		print 'Starting with files',files
 		out = runCommand(files)
 		if out:
+			print 'run ok',out.keys(),map(len,out.values())
 			outs = pickle.dumps(out)
 			s.send("OK "+str(len(outs))+'\n'+outs)
 		else:
