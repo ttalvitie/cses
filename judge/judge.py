@@ -7,6 +7,7 @@ import shutil
 import os
 from subprocess import *
 from stat import *
+import cPickle as pickle
 
 def getLine(s, buf):
 	while '\n' not in buf:
@@ -36,8 +37,12 @@ def readFile(s, buf, size, name):
 
 def runCommand(files):
 	# TODO: sandbox
+	origDir = os.getcwd()
 	try:
 		td = tempfile.mkdtemp()
+		outdir = os.path.join(td, 'out')
+		os.mkdir(outdir)
+		os.chdir(outdir)
 		for name in files:
 			if not os.path.exists(name):
 				return None
@@ -48,12 +53,16 @@ def runCommand(files):
 		for f in tfiles:
 			os.chmod(f, 0700)
 		proc = Popen(tfiles, stdout=PIPE)
-		out = proc.communicate()[0]
-		return out
+#		out = proc.communicate()[0]
+#		return out
+		proc.wait()
+		outfiles = [f for f in os.listdir(outdir) if os.path.isfile(f)]
+		return dict([(f,open(f,'r').read()) for f in outfiles])
 	except OSError:
 		print 'Running script failed'
 	finally:
 		shutil.rmtree(td)
+		os.chdir(origDir)
 
 def handleLine(s, l, buf):
 	print 'got line '+l
@@ -72,7 +81,8 @@ def handleLine(s, l, buf):
 		files = parts[1:]
 		out = runCommand(files)
 		if out:
-			s.send("OK "+str(len(out))+'\n'+out)
+			outs = pickle.dumps(out)
+			s.send("OK "+str(len(outs))+'\n'+outs)
 		else:
 			s.send("FAIL\n")
 	else:

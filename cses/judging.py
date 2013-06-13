@@ -2,6 +2,10 @@ from socket import *
 import sys
 from threading import *
 import models
+from django.core.files.base import ContentFile
+import cPickle as pickle
+import os
+import os.path
 
 class Master(Thread):
 	def __init__(self):
@@ -36,6 +40,7 @@ print('Starting judge master thread')
 master = Master()
 master.start()
 
+comparator = open('../judge/run/compare.sh')
 
 class JudgeSubmission(Thread):
 	def __init__(self, master, submission):
@@ -57,11 +62,20 @@ class JudgeSubmission(Thread):
 		for case in cases:
 			result = models.Result(submission=submission, testcase=case, result=-100)
 			result.save()
-			caseRes = self.judge.runScript(language.runner, binary, case.input, case.output)
-			intRes = int(caseRes)
-			result.result = intRes
+			runRes = self.judge.runScript(language.runner, binary, case.input)
+			result.stdout = ContentFile(runRes['stdout'])
+			result.stderr = ContentFile(runRes['stderr'])
+			status = int(result['status'])
+			if status<0:
+				result.result = status
+				result.save()
+				break
 			result.save()
-			if intRes<0:
+			compareRes = self.judge.runScript(comparator, case.output, result.stdout)
+			score = int(compareRes['result'])
+			result.result = score
+			result.save()
+			if score<0:
 				break
 
 		with master.condition:
@@ -79,7 +93,12 @@ def remoteFileName(name):
 	mid = 'cses_files/'
 	pos = name.find(mid)
 	# FIXME: this replacement might result in different paths becoming the same
-	return name[pos+len(mid):].replace(' ', '_')
+	return name[pos:].replace(' ', '__')
+
+def filePath(f):
+	if hasattr(f, 'path'):
+		return f.path
+	return os.path.abspath(f.name)
 
 class JudgeHost:
 	def __init__(self, addr):
@@ -88,7 +107,8 @@ class JudgeHost:
 		self.buf = ''
 
 	def runScript(self, files):
-		paths = [f.path for f in files]
+		print 'running script',files
+		paths = map(filePath, files)
 		remotePaths = map(remoteFileName, paths)
 		msg = ' '.join(removePaths)
 		self.sock.send("HAS " + msg + '\n')
@@ -110,7 +130,7 @@ class JudgeHost:
 			print 'Exec failure:',res
 			return
 		size = int(res[1])
-		return self.getData(size)
+		return pickle.loads(self.getData(size))
 
 	def getLine(self):
 		while '\n' not in self.buf:

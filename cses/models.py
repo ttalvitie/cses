@@ -49,6 +49,8 @@ class Submission(models.Model):
 class Result(models.Model):
 	submission = models.ForeignKey(Submission)
 	testcase = models.ForeignKey(TestCase)
+	stdout = models.FileField(storage=fs, upload_to='submission_outputs/')
+	stderr = models.FileField(storage=fs, upload_to='submission_outputs/')
 	result = models.IntegerField()
 	
 	class Meta:
