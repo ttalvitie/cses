@@ -49,11 +49,12 @@ class JudgeSubmission(Thread):
 		binary = self.judge.runScript([language.compiler, self.submission.source])
 		if not binary:
 			print 'FAILURE'
-			self.submission.judgeResult = Result.COMPILE_ERROR
+			self.submission.judgeResult = Result.INTERNAL_ERROR
 			return False
 		if 'binary' not in binary:
 			print 'Compiling failed', binary['log']
-			self.submission.judgeResult = Result.INTERNAL_ERROR
+			self.submission.judgeResult = Result.COMPILE_ERROR
+			self.submission.compileResult = binary['log']
 			return False
 		self.submission.binary.save('binary', ContentFile(binary['binary']))
 		self.submission.compileResult = binary['log'] if binary['log'] else 'OK'
