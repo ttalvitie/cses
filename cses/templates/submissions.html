@@ -1,0 +1,11 @@
+{% extends "contestpage.html" %}
+{% block title %} - {{ contest.name }}{% endblock %}
+
+{% block contestcontent %}
+<h1>Contest '{{ contest.name }}'</h1>
+<h2>Submissions</h2>
+<table border="1">
+{% for submission in submissions %}
+<tr><td>{{ submission.time }}</td><td>{{ submission.resultString }}</td></tr>
+{% endfor %}
+{% endblock %}

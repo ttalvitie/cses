@@ -1,0 +1,9 @@
+{% extends "inpage.html" %}
+
+{% block incontent %}
+<p>
+	<a href="{% url 'cses.views.contest' contest.id %}">Submit</a>
+	<a href="{% url 'cses.views.submissions' contest.id %}">Submissions</a>
+</p>
+{% block contestcontent %}{% endblock %}
+{% endblock %}

@@ -6,6 +6,7 @@ from django.core.files.base import ContentFile
 import cPickle as pickle
 import os
 import os.path
+from result import Result
 
 class Master(Thread):
 	def __init__(self):
@@ -43,24 +44,42 @@ class JudgeSubmission(Thread):
 		self.submission = submission
 		self.judge = None
 
-	def run(self):
-		assert self.judge
+	def compileSubmission(self):
 		language = self.submission.language
 		binary = self.judge.runScript([language.compiler, self.submission.source])
 		if not binary:
 			print 'FAILURE'
-			return
+			self.submission.judgeResult = Result.COMPILE_ERROR
+			return False
 		if 'binary' not in binary:
 			print 'Compiling failed', binary['log']
-			return
+			self.submission.judgeResult = Result.INTERNAL_ERROR
+			return False
 		self.submission.binary.save('binary', ContentFile(binary['binary']))
 		self.submission.compileResult = binary['log'] if binary['log'] else 'OK'
-		self.submission.save()
-		task = self.submission.task
+		self.submission.judgeResult = Result.JUDGING
+		return True
 
-		cases = models.TestCase.objects.filter(task=task)
+	def run(self):
+		assert self.judge
+		# TODO: do only necessary work when restarting judge
+		try:
+			compileRes = self.compileSubmission()
+			self.submission.save()
+			if not compileRes:
+				return
+			task = self.submission.task
+			cases = models.TestCase.objects.filter(task=task)
+			self.judgeCases(cases)
+		finally:
+			self.submission.save()
+
+	def judgeCases(self, cases):
+		task = self.submission.task
+		language = self.submission.language
+		minScore = 1000000
 		for case in cases:
-			result = models.Result(submission=self.submission, testcase=case, result=-100)
+			result = models.Result(submission=self.submission, testcase=case, result=Result.JUDGING)
 			result.save()
 			runRes = self.judge.runScript([language.runner, self.submission.binary, case.input])
 			result.stdout.save('stdout', ContentFile(runRes['stdout']))
@@ -69,6 +88,7 @@ class JudgeSubmission(Thread):
 			status = int(runRes['status'])
 			if status<0:
 				result.result = status
+				self.submission.judgeResult = Result.INTERNAL_ERROR
 				result.save()
 				break
 			result.save()
@@ -77,8 +97,10 @@ class JudgeSubmission(Thread):
 			result.result = score
 			result.save()
 			print 'judging file done with score',score
+			minScore = min(minScore, score)
 			if score<0:
 				break
+		self.submission.judgeResult = minScore
 
 		with master.condition:
 			master.condition.notify()

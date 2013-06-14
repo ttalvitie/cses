@@ -7,6 +7,8 @@ from django.core.urlresolvers import reverse
 from utils import *
 from django.conf import settings
 import judging
+import result
+from datetime import datetime
 
 class LoginForm(forms.Form):
 	username = forms.CharField()
@@ -59,7 +61,9 @@ def contest(request, contest):
 				source=form.cleaned_data['file'],
 				language=form.cleaned_data['language'],
 				contest=contest,
-				user=request.user
+				user=request.user,
+				judgeResult=result.Result.PENDING,
+				time=datetime.now()
 			)
 			submission.save()
 			judging.master.addSubmission(submission)
@@ -68,3 +72,8 @@ def contest(request, contest):
 		form = ContestSubmitForm(contest)
 	
 	return render(request, "contest.html", {'contest': contest, 'form': form})
+
+@contest_page
+def submissions(request, contest):
+	userSubs = Submission.objects.filter(user=request.user, contest=contest).order_by('-time')
+	return render(request, 'submissions.html', {'submissions': userSubs, 'contest': contest})

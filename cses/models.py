@@ -3,6 +3,7 @@ from django.contrib.auth.models import User, Group
 from django.core.files.storage import FileSystemStorage
 
 from django.conf import settings
+import result
 fs = FileSystemStorage(location=settings.CSES_FILES_DIR)
 
 #class File
@@ -45,6 +46,11 @@ class Submission(models.Model):
 	source = models.FileField(storage=fs, upload_to='submission_sources/')
 	binary = models.FileField(storage=fs, upload_to='submission_binaries/', null=True)
 	compileResult = models.TextField(null=True)
+	judgeResult = models.IntegerField()
+	time = models.DateTimeField()
+
+	def resultString(self):
+		return result.toString(self.judgeResult)
 
 class Result(models.Model):
 	submission = models.ForeignKey(Submission)

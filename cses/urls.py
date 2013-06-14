@@ -7,4 +7,5 @@ urlpatterns = patterns('',
 	url(r'^login/', views.login),
 	url(r'^logout/', views.logout),
 	url(r'^contest/([0-9]+)/$', views.contest),
+	url(r'^submissions/([0-9]+)/$', views.submissions),
 )

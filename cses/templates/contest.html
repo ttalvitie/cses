@@ -1,8 +1,8 @@
-{% extends "inpage.html" %}
+{% extends "contestpage.html" %}
 
 {% block title %} - {{ contest.name }}{% endblock %}
 
-{% block incontent %}
+{% block contestcontent %}
 <h1>Contest '{{ contest.name }}'</h1>
 <h2>Submit solution</h2>
 <form action="{% url 'cses.views.contest' contest.id %}" method="POST" enctype="multipart/form-data">
