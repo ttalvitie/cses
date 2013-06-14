@@ -46,8 +46,8 @@ class ResultInline(admin.TabularInline):
 
 class SubmissionAdmin(admin.ModelAdmin):
 	inlines = [ResultInline]
-	exclude = ('binary',)
-	readonly_fields = ('task', 'contest', 'user', 'language', 'time', 'source', 'sourceText', 'compileResult', 'judgeResult')
+	exclude = ('binary','judgeResult')
+	readonly_fields = ('task', 'contest', 'user', 'language', 'time', 'source', 'sourceText', 'compileResult', 'resultString')
 
 	def sourceText(self, instance):
 		data = instance.source.read()
