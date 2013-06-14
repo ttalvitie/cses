@@ -37,6 +37,11 @@ class Master(Thread):
 			self.jobs.append(JudgeSubmission(self, submission))
 			self.condition.notify()
 
+	def addJudge(self, judge):
+		with self.condition:
+			self.judges.append(judge)
+			self.condition.notify()
+
 class JudgeSubmission(Thread):
 	def __init__(self, master, submission):
 		Thread.__init__(self)
@@ -74,6 +79,7 @@ class JudgeSubmission(Thread):
 			self.judgeCases(cases)
 		finally:
 			self.submission.save()
+			self.master.addJudge(self.judge)
 
 	def judgeCases(self, cases):
 		task = self.submission.task
