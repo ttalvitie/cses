@@ -52,7 +52,7 @@ class JudgeSubmission(Thread):
 
 	def compileSubmission(self):
 		language = self.submission.language
-		binary = self.judge.runScript([language.compiler, self.submission.source])
+		binary = self.judge.runScript([language.compiler, self.submission.source], 30)
 		if not binary:
 			print 'FAILURE'
 			self.submission.judgeResult = Result.INTERNAL_ERROR
@@ -79,8 +79,8 @@ class JudgeSubmission(Thread):
 			cases = models.TestCase.objects.filter(task=task)
 			self.judgeCases(cases)
 		except IOError as e:
-			self.judge.reconnect()
 			self.submission.judgeResult = Result.INTERNAL_ERROR
+			self.judge.reconnect()
 #			self.master.addJob(self)
 		finally:
 			self.submission.save()
@@ -94,18 +94,22 @@ class JudgeSubmission(Thread):
 		for case in cases:
 			result = models.Result(submission=self.submission, testcase=case, result=Result.JUDGING, time=0, memory=0)
 			result.save()
-			runRes = self.judge.runScript([language.runner, self.submission.binary, case.input])
+			runRes = self.judge.runScript([language.runner, self.submission.binary, case.input], task.timeLimit)
 			result.stdout.save('stdout', ContentFile(runRes['stdout']))
 			result.stderr.save('stderr', ContentFile(runRes['stderr']))
 			print 'stderr:',runRes['stderr']
 			status = int(runRes['status'])
+			if runRes['_retval']<0:
+				print 'bad retval',runRes['_retval']
+				status = runRes['_retval']
 			if status<0:
 				result.result = status
 				self.submission.judgeResult = status
 				result.save()
+				minScore = status
 				break
 			result.save()
-			compareRes = self.judge.runScript([task.evaluator, case.output, result.stdout])
+			compareRes = self.judge.runScript([task.evaluator, case.output, result.stdout], 10)
 			score = int(compareRes['result'])
 			result.result = score
 			result.save()
@@ -114,9 +118,6 @@ class JudgeSubmission(Thread):
 			if score<0:
 				break
 		self.submission.judgeResult = minScore
-
-		with master.condition:
-			master.condition.notify()
 
 
 def sendFile(sock, filename, fileField):
@@ -148,7 +149,7 @@ class JudgeHost:
 		self.sock = socket(AF_INET, SOCK_STREAM)
 		self.sock.connect((self.addr, 21094))
 
-	def runScript(self, files):
+	def runScript(self, files, time):
 		print 'running script',files
 		paths = map(filePath, files)
 		remotePaths = map(remoteFileName, paths)
@@ -166,7 +167,7 @@ class JudgeHost:
 				if line!='OK':
 					return
 #		msg = ' '.join([f[0]+' '+f[1] for f in files])
-		self.sock.send('RUN '+msg+'\n')
+		self.sock.send('RUN '+str(time)+' '+msg+'\n')
 		res = self.getLine().split(' ')
 		if res[0]!='OK':
 			print 'Exec failure:',res

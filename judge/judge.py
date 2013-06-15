@@ -10,6 +10,7 @@ from stat import *
 import cPickle as pickle
 import resource
 import sys
+import time
 
 def getLine(s, buf):
 	while '\n' not in buf:
@@ -50,13 +51,12 @@ def setPathPermission(path, perm):
 	except OSError:
 		pass
 
-# TODO: get as parameters
-maxTime = 1
+# TODO: get as parameter
 maxMemory = 100*1000
 
 runBoxed = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), 'run_boxed.sh')
 
-def runCommand(files):
+def runCommand(files, maxTime):
 	origDir = os.getcwd()
 	try:
 		td = tempfile.mkdtemp()
@@ -82,14 +82,21 @@ def runCommand(files):
 		os.chmod(td, 0777)
 		os.chmod(outdir, 0777)
 #		proc = Popen(tfiles, stdout=PIPE)
-		saferun = ['sudo', '-u', 'judgerun', runBoxed, str(maxTime), str(maxMemory)]
-		proc = Popen(saferun + tfiles)
+		saferun = ['sudo', '-u', 'judgerun', runBoxed, str(int(maxTime+1)), str(maxMemory)]
+		startTime = time.time()
+		retval = call(saferun + tfiles)
+		usedTime = time.time() - startTime
+		if usedTime > maxTime:
+			print 'TLE'
+			retval = -2
 #		proc = Popen(tfiles, stdout=PIPE, preexec_fn=setLimits)
 #		out = proc.communicate()[0]
 #		return out
-		proc.wait()
+#		proc.wait()
 		outfiles = [f for f in os.listdir(outdir) if os.path.isfile(f)]
-		return dict([(f,open(f,'r').read()) for f in outfiles])
+		res = dict([(f,open(f,'r').read()) for f in outfiles])
+		res['_retval'] = retval
+		return res
 	except OSError as e:
 		print 'Running script failed',e
 	finally:
@@ -111,11 +118,12 @@ def handleLine(s, l, buf):
 		buf = readFile(s, buf, length, name)
 		s.send('OK\n')
 	elif cmd=='RUN':
-		files = parts[1:]
+		time = float(parts[1])
+		files = parts[2:]
 		print 'Starting with files',files
-		out = runCommand(files)
+		out = runCommand(files, time)
 		if out:
-			print 'run ok',out.keys(),map(len,out.values())
+			print 'run ok',out.keys()
 			outs = pickle.dumps(out)
 			s.send("OK "+str(len(outs))+'\n'+outs)
 		else:
