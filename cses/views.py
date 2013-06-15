@@ -88,6 +88,8 @@ def resultColor(res):
 	return '#FF0000'
 
 def submissionCell(submitData):
+	if submitData == None:
+		return '<td></td>'
 	(submission, time, count) = submitData
 	res = submission.judgeResult
 	content = str(count)+'<br/>'+str(time)
@@ -97,7 +99,7 @@ def countResult(user, scores, contest):
 	resTime = 0
 	resPoints = 0
 	for i in scores:
-		if i is None:
+		if i == None:
 			continue
 		(submission, time, count) = i
 		res = submission.judgeResult
@@ -105,7 +107,7 @@ def countResult(user, scores, contest):
 		print 'countresult ',res, result.points(res)
 		if result.points(res)!=0:
 			resTime += time
-	return (resPoints, -resTime, user)
+	return (-resPoints, resTime, user)
 
 def makeScoreboard(contest):
 	submits = contest.latestSubmits()
@@ -123,7 +125,7 @@ def makeScoreboard(contest):
 	res += '</tr>'
 	for i in xrange(len(table)):
 		(score, time, uidx) = uresults[i]
-		res += '<tr><td>'+str(1+i)+'</td><td>'+users[uidx]+'</td><td>'+str(score)+'</td><td>'+str(-time)+'</td>'
+		res += '<tr><td>'+str(1+i)+'</td><td>'+users[uidx]+'</td><td>'+str(-score)+'</td><td>'+str(time)+'</td>'
 		row = table[uidx]
 		res += ''.join([submissionCell(s) for s in row])
 		res += '</tr>'
