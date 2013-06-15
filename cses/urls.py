@@ -8,4 +8,5 @@ urlpatterns = patterns('',
 	url(r'^logout/', views.logout),
 	url(r'^contest/([0-9]+)/$', views.contest),
 	url(r'^submissions/([0-9]+)/$', views.submissions),
+	url(r'^scoreboard/([0-9]+)/$', views.scoreboard),
 )

@@ -4,6 +4,7 @@
 <p>
 	<a href="{% url 'cses.views.contest' contest.id %}">Submit</a>
 	<a href="{% url 'cses.views.submissions' contest.id %}">Submissions</a>
+	<a href="{% url 'cses.views.scoreboard' contest.id %}">Scoreboard</a>
 </p>
 {% block contestcontent %}{% endblock %}
 {% endblock %}

@@ -41,6 +41,20 @@ class Contest(models.Model):
 	def __unicode__(self):
 		return self.name
 
+	def latestSubmits(self):
+		submits = Submission.objects.filter(contest=self).order_by('time')
+		res = {}
+		for s in submits:
+			task = s.task.name
+			user = unicode(s.user)
+			if task not in res:
+				res[task] = {}
+			userDict = res[task]
+			(_, oldTime, oldCount) = userDict.get(user, (None, 0, 0))
+			penalty = result.penaltyTime(s.judgeResult)
+			userDict[user] = (s, oldTime+penalty, oldCount+1)
+		return res
+
 class Submission(models.Model):
 	task = models.ForeignKey(Task)
 	contest = models.ForeignKey(Contest)

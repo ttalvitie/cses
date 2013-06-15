@@ -77,3 +77,59 @@ def contest(request, contest):
 def submissions(request, contest):
 	userSubs = Submission.objects.filter(user=request.user, contest=contest).order_by('-time')
 	return render(request, 'submissions.html', {'submissions': userSubs, 'contest': contest})
+
+def resultColor(res):
+	if res>0:
+		return '#00FF00'
+	if result.notDone(res):
+		return '#FFFF00'
+	if res==0:
+		return '#000000'
+	return '#FF0000'
+
+def submissionCell(submitData):
+	(submission, time, count) = submitData
+	res = submission.judgeResult
+	content = str(count)+'<br/>'+str(time)
+	return '<td bgcolor="%s" width="%d" height="%d">%s</td>' % (resultColor(res), 40, 40, content)
+
+def countResult(user, scores, contest):
+	resTime = 0
+	resPoints = 0
+	for i in scores:
+		if i is None:
+			continue
+		(submission, time, count) = i
+		res = submission.judgeResult
+		resPoints += result.points(res)
+		print 'countresult ',res, result.points(res)
+		if result.points(res)!=0:
+			resTime += time
+	return (resPoints, -resTime, user)
+
+def makeScoreboard(contest):
+	submits = contest.latestSubmits()
+	users = map(unicode, contest.users.all())
+	tasks = map(unicode, contest.tasks.all().order_by('name'))
+	table = [[(submits[t][u] if t in submits and u in submits[t] else None) for t in tasks] for u in users]
+	uresults = sorted([countResult(i, table[i], contest) for i in xrange(len(users))])
+
+	res = '<table border="1">'
+	res += '<tr><td>Rank</td><td>Team</td><td>Score</td><td>Time</td>'
+#	for task in tasks:
+#		res += '<td>'+task+'</td>'
+	for i in xrange(len(tasks)):
+		res += '<td>'+chr(ord('A')+i)+'</td>'
+	res += '</tr>'
+	for i in xrange(len(table)):
+		(score, time, uidx) = uresults[i]
+		res += '<tr><td>'+str(1+i)+'</td><td>'+users[uidx]+'</td><td>'+str(score)+'</td><td>'+str(-time)+'</td>'
+		row = table[uidx]
+		res += ''.join([submissionCell(s) for s in row])
+		res += '</tr>'
+	res += '</table>'
+	return res
+
+@contest_page
+def scoreboard(request, contest):
+	return render(request, 'scoreboard.html', {'contest': contest, 'scoreboard': makeScoreboard(contest)})

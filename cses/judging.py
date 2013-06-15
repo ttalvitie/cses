@@ -7,6 +7,18 @@ import cPickle as pickle
 import os
 import os.path
 from result import Result
+import time
+
+def addJudge(host, master):
+	print 'Trying to connect to judgehost'
+	while True:
+		try:
+			jhost = JudgeHost(host)
+			print 'Connect to judgehost succeeded'
+			master.addJudge(jhost)
+			break
+		except:
+			time.sleep(5)
 
 class Master(Thread):
 	def __init__(self):
@@ -14,7 +26,13 @@ class Master(Thread):
 		self.condition = Condition()
 		self.jobs = []
 		# TODO: check for judges not only at start
-		self.judges = [JudgeHost(j.host) for j in models.JudgeHost.objects.filter(active=True)]
+#		self.judges = [JudgeHost(j.host) for j in models.JudgeHost.objects.filter(active=True)]
+		self.judges = []
+		for j in models.JudgeHost.objects.filter(active=True):
+			t = Thread(target=addJudge, args=(j.host, self))
+			t.daemon = True
+			t.start()
+#			addJudge(j.host, self)
 #		self.reservedJudges = []
 
 	def run(self):
@@ -78,14 +96,19 @@ class JudgeSubmission(Thread):
 			task = self.submission.task
 			cases = models.TestCase.objects.filter(task=task)
 			self.judgeCases(cases)
-		except IOError as e:
-			self.submission.judgeResult = Result.INTERNAL_ERROR
-			self.judge.reconnect()
-#			self.master.addJob(self)
-		finally:
+
 			self.submission.save()
 			self.master.addJudge(self.judge)
 			print 'judging finished'
+#		except IOError as e:
+		except:
+			print 'JUDGING FAILED', sys.exc_info()[0]
+#			self.submission.judgeResult = Result.INTERNAL_ERROR
+#			self.judge.reconnect()
+			self.submission.judgeResult = Result.PENDING
+			self.submission.save()
+			self.master.addJob(self)
+			addJudge(self.judge.host, self.master)
 
 	def judgeCases(self, cases):
 		task = self.submission.task
