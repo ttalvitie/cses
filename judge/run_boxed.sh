@@ -3,4 +3,4 @@
 # NOTE: This should be run as the user who runs the program.
 
 ulimit -u 10 -t $1 -v $2
-${@:3}
+timeout $1 ${@:3}
