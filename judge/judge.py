@@ -89,6 +89,8 @@ def runCommand(files, maxTime):
 		if usedTime > maxTime:
 			print 'TLE'
 			retval = -2
+		elif retval!=0:
+			retval = -3
 #		proc = Popen(tfiles, stdout=PIPE, preexec_fn=setLimits)
 #		out = proc.communicate()[0]
 #		return out
