@@ -90,7 +90,8 @@ def resultColor(res):
 def submissionCell(submitData):
 	if submitData == None:
 		return '<td></td>'
-	(submission, time, count) = submitData
+	(submission, _, count) = submitData
+	time = submission.submitTime()
 	res = submission.judgeResult
 	content = str(count)+'<br/>'+str(time)
 	return '<td bgcolor="%s" width="%d" height="%d">%s</td>' % (resultColor(res), 40, 40, content)
@@ -107,6 +108,7 @@ def countResult(user, scores, contest):
 		print 'countresult ',res, result.points(res)
 		if result.points(res)!=0:
 			resTime += time
+			resTime += submission.submitTime()
 	return (-resPoints, resTime, user)
 
 def makeScoreboard(contest):

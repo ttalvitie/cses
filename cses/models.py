@@ -69,6 +69,9 @@ class Submission(models.Model):
 	def resultString(self):
 		return result.toString(self.judgeResult)
 
+	def submitTime(self):
+		return int((self.time - self.contest.startTime).total_seconds()/60)
+
 class Result(models.Model):
 	submission = models.ForeignKey(Submission)
 	testcase = models.ForeignKey(TestCase)
