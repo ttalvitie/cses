@@ -9,6 +9,7 @@ from subprocess import *
 from stat import *
 import cPickle as pickle
 import resource
+import sys
 
 def getLine(s, buf):
 	while '\n' not in buf:
@@ -41,8 +42,21 @@ def readFile(s, buf, size, name):
 #	memlimit = 100*1024*1024 # TODO: specify in some config file etc.
 #	resource.setrlimit(resource.RLIMIT_VMEM, (memlimit,memlimit))
 
+def setPathPermission(path, perm):
+	try:
+		while path!='/':
+			os.chmod(path, perm)
+			path = os.path.dirname(path)
+	except OSError:
+		pass
+
+# TODO: get as parameters
+maxTime = 1
+maxMemory = 100*1000
+
+runBoxed = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), 'run_boxed.sh')
+
 def runCommand(files):
-	# TODO: sandbox
 	origDir = os.getcwd()
 	try:
 		td = tempfile.mkdtemp()
@@ -60,11 +74,16 @@ def runCommand(files):
 		tfiles = [os.path.join(td, f) for f in files]
 		print 'running',tfiles
 		for f in tfiles:
-			os.chmod(f, 0700)
+			os.chmod(f, 0777)
 		outdir = os.path.join(td, 'out')
 		os.mkdir(outdir)
 		os.chdir(outdir)
-		proc = Popen(tfiles, stdout=PIPE)
+		setPathPermission(outdir, 0111)
+		os.chmod(td, 0777)
+		os.chmod(outdir, 0777)
+#		proc = Popen(tfiles, stdout=PIPE)
+		saferun = ['sudo', '-u', 'judgerun', runBoxed, str(maxTime), str(maxMemory)]
+		proc = Popen(saferun + tfiles)
 #		proc = Popen(tfiles, stdout=PIPE, preexec_fn=setLimits)
 #		out = proc.communicate()[0]
 #		return out
@@ -125,4 +144,5 @@ sock.listen(5)
 while True:
 	(csock,addr) = sock.accept()
 	t = Thread(target=handleSocket, args=(csock,addr))
+	t.daemon = True
 	t.start()

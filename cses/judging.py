@@ -13,28 +13,29 @@ class Master(Thread):
 		Thread.__init__(self)
 		self.condition = Condition()
 		self.jobs = []
-		self.judges = [JudgeHost(j.host) for j in models.JudgeHost.objects.all()]
+		# TODO: check for judges not only at start
+		self.judges = [JudgeHost(j.host) for j in models.JudgeHost.objects.filter(active=True)]
+#		self.reservedJudges = []
 
 	def run(self):
 		with self.condition:
 			while True:
-				if self.jobs and self.judges:
-					self.startJobs()
+				self.startJobs()
 				self.condition.wait()
 
 	def startJobs(self):
 		# At this point self.condition is already acquired
-		for j in self.jobs:
-			if not self.judges:
-				break
-			j.judge = self.judges.pop()
-			j.start()
-		self.jobs = []
+		while self.jobs and self.judges:
+			job = self.jobs.pop()
+			job.judge = self.judges.pop()
+			job.start()
 
 	def addSubmission(self, submission):
+		self.addJob(JudgeSubmission(self, submission))
+
+	def addJob(self, job):
 		with self.condition:
-			print 'New submission'
-			self.jobs.append(JudgeSubmission(self, submission))
+			self.jobs.append(job)
 			self.condition.notify()
 
 	def addJudge(self, judge):
@@ -77,9 +78,14 @@ class JudgeSubmission(Thread):
 			task = self.submission.task
 			cases = models.TestCase.objects.filter(task=task)
 			self.judgeCases(cases)
+		except IOError as e:
+			self.judge.reconnect()
+			self.submission.judgeResult = Result.INTERNAL_ERROR
+#			self.master.addJob(self)
 		finally:
 			self.submission.save()
 			self.master.addJudge(self.judge)
+			print 'judging finished'
 
 	def judgeCases(self, cases):
 		task = self.submission.task
@@ -95,7 +101,7 @@ class JudgeSubmission(Thread):
 			status = int(runRes['status'])
 			if status<0:
 				result.result = status
-				self.submission.judgeResult = Result.INTERNAL_ERROR
+				self.submission.judgeResult = status
 				result.save()
 				break
 			result.save()
@@ -135,6 +141,12 @@ class JudgeHost:
 		self.sock = socket(AF_INET, SOCK_STREAM)
 		self.sock.connect((addr, 21094))
 		self.buf = ''
+		self.addr = addr
+
+	def reconnect(self):
+		self.sock.close()
+		self.sock = socket(AF_INET, SOCK_STREAM)
+		self.sock.connect((self.addr, 21094))
 
 	def runScript(self, files):
 		print 'running script',files
@@ -166,6 +178,7 @@ class JudgeHost:
 		while '\n' not in self.buf:
 			data = self.sock.recv(1024)
 			if not data:
+				raise IOError('No data received from connection')
 				return None
 			self.buf += data
 		res,self.buf = self.buf.split('\n', 1)
