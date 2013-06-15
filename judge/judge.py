@@ -8,6 +8,7 @@ import os
 from subprocess import *
 from stat import *
 import cPickle as pickle
+import resource
 
 def getLine(s, buf):
 	while '\n' not in buf:
@@ -35,6 +36,11 @@ def readFile(s, buf, size, name):
 		f.write(buf[:remain])
 		return buf[remain:]
 
+#def setLimits():
+#	resource.setrlimit(resource.RLIMIT_CPU, (1,1))
+#	memlimit = 100*1024*1024 # TODO: specify in some config file etc.
+#	resource.setrlimit(resource.RLIMIT_VMEM, (memlimit,memlimit))
+
 def runCommand(files):
 	# TODO: sandbox
 	origDir = os.getcwd()
@@ -59,6 +65,7 @@ def runCommand(files):
 		os.mkdir(outdir)
 		os.chdir(outdir)
 		proc = Popen(tfiles, stdout=PIPE)
+#		proc = Popen(tfiles, stdout=PIPE, preexec_fn=setLimits)
 #		out = proc.communicate()[0]
 #		return out
 		proc.wait()

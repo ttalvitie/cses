@@ -86,7 +86,7 @@ class JudgeSubmission(Thread):
 		language = self.submission.language
 		minScore = 1000000
 		for case in cases:
-			result = models.Result(submission=self.submission, testcase=case, result=Result.JUDGING)
+			result = models.Result(submission=self.submission, testcase=case, result=Result.JUDGING, time=0, memory=0)
 			result.save()
 			runRes = self.judge.runScript([language.runner, self.submission.binary, case.input])
 			result.stdout.save('stdout', ContentFile(runRes['stdout']))

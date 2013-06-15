@@ -11,10 +11,19 @@ admin.site.register(Contest)
 admin.site.register(Language)
 admin.site.register(JudgeHost)
 
-class TestCaseInline(admin.StackedInline):
+class TestCaseInline(admin.TabularInline):
 	model = TestCase
+class SubmissionInline(admin.TabularInline):
+	model = Submission
+	readonly_fields = ('time', 'contest', 'user', 'language', 'resultString')
+	exclude = ('source', 'binary', 'compileResult', 'judgeResult')
+	ordering = ('-time',)
+	def has_add_permission(self, request):
+		return False
+	def has_delete_permission(self, request, obj):
+		return False
 class TaskAdmin(admin.ModelAdmin):
-	inlines = [TestCaseInline]
+	inlines = [TestCaseInline, SubmissionInline]
 
 admin.site.register(Task, TaskAdmin)
 
@@ -28,7 +37,7 @@ admin.site.register(User, MyUserAdmin)
 class ResultInline(admin.TabularInline):
 	model = Result
 	readonly_fields = ('input','output','correct','result')
-	exclude = ('testcase', 'stdout', 'stderr')
+	exclude = ('testcase', 'stdout', 'stderr', 'time', 'memory')
 	def input(self, instance):
 		return instance.testcase.input.read()
 	def output(self, instance):
@@ -56,5 +65,8 @@ class SubmissionAdmin(admin.ModelAdmin):
 		return highlight(data, lexer, formatter)
 	sourceText.short_description = 'Source'
 	sourceText.allow_tags = True
+
+	list_display = ('task','user','language','resultString')
+	list_display_links = list_display
 #admin.site.register(Submission)
 admin.site.register(Submission, SubmissionAdmin)

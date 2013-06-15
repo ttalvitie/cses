@@ -11,7 +11,8 @@ fs = FileSystemStorage(location=settings.CSES_FILES_DIR)
 class Task(models.Model):
 	name = models.CharField(max_length=255, unique=True)
 	evaluator = models.FileField(storage=fs, upload_to='task_evaluators/')
-	
+	timeLimit = models.FloatField()
+
 	def __unicode__(self):
 		return self.name
 
@@ -34,7 +35,9 @@ class Contest(models.Model):
 	groups = models.ManyToManyField(Group, blank=True)
 	tasks = models.ManyToManyField(Task, blank=True)
 	active = models.BooleanField()
-	
+	startTime = models.DateTimeField()
+	endTime = models.DateTimeField()
+
 	def __unicode__(self):
 		return self.name
 
@@ -58,7 +61,12 @@ class Result(models.Model):
 	stdout = models.FileField(storage=fs, upload_to='submission_outputs/')
 	stderr = models.FileField(storage=fs, upload_to='submission_outputs/')
 	result = models.IntegerField()
-	
+	time = models.FloatField()
+	memory = models.IntegerField()
+
+	def resultString(self):
+		return result.toString(self.result)
+
 	class Meta:
 		unique_together = ('submission', 'testcase')
 
