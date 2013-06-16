@@ -4,7 +4,7 @@
 {% block contestcontent %}
 <!--<h1>Contest '{{ contest.name }}'</h1>-->
 <h1>Submissions</h1>
-<table border="1">
+<table border width="400">
 {% for submission in submissions %}
 <tr><td>{{ submission.time }}</td><td>{{ submission.resultString }}</td></tr>
 {% endfor %}
