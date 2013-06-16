@@ -7,7 +7,6 @@ from pygments.formatters import HtmlFormatter
 from pygments.lexers import guess_lexer_for_filename
 import sys
 
-admin.site.register(Contest)
 admin.site.register(Language)
 admin.site.register(JudgeHost)
 
@@ -70,3 +69,9 @@ class SubmissionAdmin(admin.ModelAdmin):
 	list_display_links = list_display
 #admin.site.register(Submission)
 admin.site.register(Submission, SubmissionAdmin)
+
+class ContestTaskInline(admin.TabularInline):
+	model = ContestTask
+class ContestAdmin(admin.ModelAdmin):
+	inlines = [ContestTaskInline]
+admin.site.register(Contest, ContestAdmin)

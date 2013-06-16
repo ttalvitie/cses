@@ -34,7 +34,7 @@ class Contest(models.Model):
 	name = models.CharField(max_length=255, unique=True)
 	users = models.ManyToManyField(User, blank=True)
 	groups = models.ManyToManyField(Group, blank=True)
-	tasks = models.ManyToManyField(Task, blank=True)
+	tasks = models.ManyToManyField(Task, through='ContestTask')
 	active = models.BooleanField()
 	startTime = models.DateTimeField()
 	endTime = models.DateTimeField()
@@ -60,6 +60,11 @@ class Contest(models.Model):
 			penalty = result.penaltyTime(s.judgeResult)
 			userDict[user] = (s, oldTime+penalty, oldCount+1)
 		return res
+
+class ContestTask(models.Model):
+	contest = models.ForeignKey(Contest)
+	task = models.ForeignKey(Task)
+	order = models.IntegerField()
 
 class Submission(models.Model):
 	task = models.ForeignKey(Task)
