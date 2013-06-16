@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect
 from django import forms
 from django.contrib import auth
 from django.core.urlresolvers import reverse
+from django.core.files import File
+from django.core.files.base import ContentFile
 
 from utils import *
 from django.conf import settings
@@ -180,3 +182,64 @@ def viewSubmission(request, subid):
 		return redirect('cses.views.index')
 	code = highlightedCode(submission)
 	return render(request, 'viewsubmission.html', {'submission': submission, 'contest':contest, 'code':code})
+
+
+class ImportForm(forms.Form):
+	name = forms.CharField()
+	data = forms.FileField()
+
+from zipfile import ZipFile
+def importArchive(data, contest):
+	z = ZipFile(data, 'r')
+	tasks = list(set([i.split('/')[0] for i in z.namelist()]))
+	evaluator = File(open('../judge/run/compare.sh','r'))
+	taskModels = {}
+	for i in xrange(len(tasks)):
+		t = tasks[i]
+		task = models.Task(
+				name=t,
+				evaluator=evaluator,
+				timeLimit=1,
+				score=100)
+		task.save()
+		ct = ContestTask(contest=contest, task=task, order=i)
+		ct.save()
+		taskModels[t] = task
+
+	print tasks
+	nameset = set(z.namelist())
+	for i in sorted(z.namelist()):
+		parts = i.split('.')
+		if len(parts)<2 or parts[-2]!='in':
+			continue
+		task = i.split('/')[0]
+		parts[-2] = 'out'
+		out = '.'.join(parts)
+		if out not in nameset:
+			print 'Warning: no output-pair for input file',i
+			continue
+#		print 'found input-output pair',i,out
+		case = models.TestCase(task=taskModels[task])
+		case.input.save(i, ContentFile(z.read(i)))
+		case.output.save(out, ContentFile(z.read(out)))
+		case.save()
+
+@require_login
+def taskImport(request):
+	if not request.user.is_superuser:
+		raise Http404
+	if request.method == 'POST':
+		form = ImportForm(request.POST, request.FILES)
+		if form.is_valid():
+			contest = models.Contest(
+					name=form.cleaned_data['name'],
+					active=True,
+					startTime=datetime.now(),
+					endTime=datetime.now(),
+					contestType = models.Contest.Type.IOI)
+			contest.save()
+			taskfile = form.cleaned_data['data']
+			importArchive(taskfile.file, contest)
+	else:
+		form = ImportForm()
+	return render(request, 'import.html', {'form':form})
