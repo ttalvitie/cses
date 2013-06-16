@@ -109,7 +109,7 @@ class JudgeSubmission(Thread):
 			self.submission.judgeResult = Result.PENDING
 			self.submission.save()
 			self.master.addJob(self)
-			addJudge(self.judge.host, self.master)
+			addJudge(self.judge.addr, self.master)
 
 	def judgeCases(self, cases):
 		task = self.submission.task
