@@ -121,7 +121,8 @@ def countResult(user, scores, contest):
 def makeScoreboard(contest):
 	submits = contest.latestSubmits()
 	users = map(unicode, contest.users.all())
-	tasks = map(unicode, contest.tasks.all().order_by('name'))
+	taskM = contest.tasks.all()
+	tasks = map(unicode, taskM.order_by('name'))
 	table = [[(submits[t][u] if t in submits and u in submits[t] else None) for t in tasks] for u in users]
 	uresults = sorted([countResult(i, table[i], contest) for i in xrange(len(users))])
 
@@ -130,7 +131,10 @@ def makeScoreboard(contest):
 #	for task in tasks:
 #		res += '<td>'+task+'</td>'
 	for i in xrange(len(tasks)):
-		res += '<td>'+chr(ord('A')+i)+'</td>'
+		data = chr(ord('A')+i)
+		if contest.contestType==models.Contest.Type.IOI:
+			data+=' '+str(taskM[i].score)
+		res += '<td>'+data+'</td>'
 	res += '</tr>'
 	for i in xrange(len(table)):
 		(score, time, uidx) = uresults[i]
