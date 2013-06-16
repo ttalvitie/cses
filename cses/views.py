@@ -218,7 +218,7 @@ def importArchive(data, contest):
 		if out not in nameset:
 			print 'Warning: no output-pair for input file',i
 			continue
-#		print 'found input-output pair',i,out
+		print 'found input-output pair',i,out
 		case = models.TestCase(task=taskModels[task])
 		case.input.save(i, ContentFile(z.read(i)))
 		case.output.save(out, ContentFile(z.read(out)))
