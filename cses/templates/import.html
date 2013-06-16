@@ -1,0 +1,15 @@
+{% extends "inpage.html" %}
+
+{% block incontent %}
+<h1>Import</h1>
+<form action="{% url 'cses.views.taskImport' %}" method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+<table>
+<tr><td>Contest name:</td><td>&nbsp;</td><td>{{ form.name }}</td></tr>
+<tr><td>Directory:</td><td>&nbsp;</td><td>{{ form.data }}</td></tr>
+</table>
+<p>
+<input type="submit" value="Submit" />
+</p>
+</form>
+{% endblock %}
