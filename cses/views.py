@@ -34,7 +34,7 @@ def login(request):
 	return render(request, "login.html", {'form': form})
 
 def logout(request):
-	if request.method == 'POST':
+	if request.method == 'GET':
 		auth.logout(request)
 	
 	return redirect('cses.views.login')
@@ -42,8 +42,10 @@ def logout(request):
 @require_login
 def index(request):
 	contests = getUserContests(request.user)
-	
-	return render(request, "index.html", {'contests': contests})
+	if len(contests) == 1:
+		return redirect('contest/' + str(contests[0].id) + '/')
+	else:
+		return render(request, "index.html", {'contests': contests})
 
 	
 class ContestSubmitForm(forms.Form):
