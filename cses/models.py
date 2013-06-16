@@ -83,7 +83,9 @@ class Submission(models.Model):
 		return result.toString(self.judgeResult)
 
 	def submitTime(self):
-		return int((self.time - self.contest.startTime).total_seconds()/60)
+		diff = self.time - self.contest.startTime
+		diffSec = diff.seconds + diff.days*24*3600
+		return int(diffSec/60)
 
 	def points(self):
 		if self.judgeResult<=0:
