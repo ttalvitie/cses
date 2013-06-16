@@ -9,4 +9,5 @@ urlpatterns = patterns('',
 	url(r'^contest/([0-9]+)/$', views.contest),
 	url(r'^submissions/([0-9]+)/$', views.submissions),
 	url(r'^scoreboard/([0-9]+)/$', views.scoreboard),
+	url(r'^viewsubmission/([0-9]+)/$', views.viewSubmission),
 )

@@ -11,6 +11,10 @@ import result
 from datetime import datetime
 import models
 
+from pygments import highlight
+from pygments.formatters import HtmlFormatter
+from pygments.lexers import guess_lexer_for_filename
+
 class LoginForm(forms.Form):
 	username = forms.CharField()
 	password = forms.CharField(widget=forms.PasswordInput)
@@ -93,7 +97,7 @@ def resultColor(res):
 		return '#000000'
 	return '#FF0000'
 
-def submissionCell(submitData, contestType):
+def submissionCell(submitData, contestType, showLinks):
 	if submitData == None:
 		return '<td></td>'
 	(submission, _, count) = submitData
@@ -104,6 +108,9 @@ def submissionCell(submitData, contestType):
 		content = str(count)+'<br/>'+str(time)
 	else:
 		content = str(submission.points())+'<br/>'+str(time)
+	if showLinks:
+		url = reverse('cses.views.viewSubmission', args=(submission.id,))
+		content = '<a href="%s">%s</a>' % (url, content)
 	
 	return '<td bgcolor="%s" width="%d" height="%d">%s</td>' % (resultColor(res), 40, 40, content)
 
@@ -122,7 +129,7 @@ def countResult(user, scores, contest):
 			resTime += submission.submitTime()
 	return (-resPoints, resTime, user)
 
-def makeScoreboard(contest):
+def makeScoreboard(contest, showLinks):
 	submits = contest.latestSubmits()
 	users = map(unicode, contest.users.all())
 	taskM = contest.tasks.all()
@@ -144,11 +151,29 @@ def makeScoreboard(contest):
 		(score, time, uidx) = uresults[i]
 		res += '<tr><td>'+str(1+i)+'</td><td>'+users[uidx]+'</td><td>'+str(-score)+'</td><td>'+str(time)+'</td>'
 		row = table[uidx]
-		res += ''.join([submissionCell(s, contest.contestType) for s in row])
+		res += ''.join([submissionCell(s, contest.contestType, showLinks) for s in row])
 		res += '</tr>'
 	res += '</table>'
 	return res
 
 @contest_page
 def scoreboard(request, contest):
-	return render(request, 'scoreboard.html', {'contest': contest, 'scoreboard': makeScoreboard(contest)})
+	return render(request, 'scoreboard.html', {'contest': contest, 'scoreboard': makeScoreboard(contest, datetime.now()>contest.endTime)})
+
+def highlightedCode(submission):
+	data = submission.source.read()
+	lexer = guess_lexer_for_filename(submission.source.path, data)
+	formatter = HtmlFormatter(linenos=True, noclasses=True)
+	return highlight(data, lexer, formatter)
+
+@require_login
+def viewSubmission(request, subid):
+	subs = models.Submission.objects.filter(id=subid)
+	if not subs:
+		return redirect('cses.views.index')
+	submission = subs[0]
+	contest = submission.contest
+	if datetime.now() <= contest.endTime:
+		return redirect('cses.views.index')
+	code = highlightedCode(submission)
+	return render(request, 'viewsubmission.html', {'submission': submission, 'contest':contest, 'code':code})
