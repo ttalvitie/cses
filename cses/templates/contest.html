@@ -3,13 +3,17 @@
 {% block title %} - {{ contest.name }}{% endblock %}
 
 {% block contestcontent %}
-<h1>Contest '{{ contest.name }}'</h1>
-<h2>Submit solution</h2>
+<!--<h1>Contest '{{ contest.name }}'</h1>-->
+<h1>Submit solution</h1>
 <form action="{% url 'cses.views.contest' contest.id %}" method="POST" enctype="multipart/form-data">
 {% csrf_token %}
-<p>Task: {{ form.task }}</p>
-<p>File: {{ form.file }}</p>
-<p>Language: {{ form.language }}</p>
-<input type="submit" />
+<table>
+<tr><td>Task name:</td><td>&nbsp;</td><td>{{ form.task }}</td></tr>
+<tr><td>Source file:</td><td>&nbsp;</td><td> {{ form.file }}</td></tr>
+<tr><td>Language:</td><td>&nbsp;</td><td>{{ form.language }}</td></tr>
+</table>
+<p>
+<input type="submit" value="Submit" />
+</p>
 </form>
 {% endblock %}
