@@ -5,7 +5,11 @@
 <!--<h1>Contest '{{ contest.name }}'</h1>-->
 <h1>Submissions</h1>
 <table border width="400">
+	<tr><td>Submission time</td><td>Evaluation</td></tr>
 {% for submission in submissions %}
-<tr><td>{{ submission.time }}</td><td>{{ submission.resultString }}</td></tr>
+<tr>
+	<td>{{ submission.time }}</td>
+	<td><a href="{% url 'cses.views.viewSubmission' submission.id %}">{{ submission.resultString }}</a></td>
+</tr>
 {% endfor %}
 {% endblock %}

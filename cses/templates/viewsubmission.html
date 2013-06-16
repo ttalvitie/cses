@@ -3,7 +3,9 @@
 
 {% block contestcontent %}
 <h1>Submission {{ submission.id }}: {{ submission.user }} - {{ submission.task }}</h1>
-Evaluation: {{ submission.resultString }}
+<p>Evaluation: {{ submission.resultString }} </p>
+<p>Compiler output:<br/>
+{{ submission.compileResult }} </p>
 
 {{ code|safe }}
 

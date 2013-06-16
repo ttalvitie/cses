@@ -181,7 +181,7 @@ def viewSubmission(request, subid):
 		return redirect('cses.views.index')
 	submission = subs[0]
 	contest = submission.contest
-	if datetime.now() <= contest.endTime and not request.user.is_superuser:
+	if datetime.now() <= contest.endTime and not request.user.is_superuser and submission.user!=request.user:
 		return redirect('cses.views.index')
 	code = highlightedCode(submission)
 	return render(request, 'viewsubmission.html', {'submission': submission, 'contest':contest, 'code':code})
