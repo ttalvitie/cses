@@ -97,6 +97,7 @@ def runCommand(files, maxTime, maxMemory):
 		outfiles = [f for f in os.listdir(outdir) if os.path.isfile(f)]
 		res = dict([(f,open(f,'r').read()) for f in outfiles])
 		res['_retval'] = retval
+		res['_time'] = usedTime
 		return res
 	except OSError as e:
 		print 'Running script failed',e

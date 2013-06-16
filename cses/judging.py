@@ -122,6 +122,7 @@ class JudgeSubmission(Thread):
 			runRes = self.judge.runScript([language.runner, self.submission.binary, case.input], task.timeLimit, memory)
 			result.stdout.save('stdout', ContentFile(runRes['stdout']))
 			result.stderr.save('stderr', ContentFile(runRes['stderr']))
+			result.time = runRes['_time']
 			print 'stderr:',runRes['stderr']
 			status = int(runRes['status'])
 			if runRes['_retval']<0:

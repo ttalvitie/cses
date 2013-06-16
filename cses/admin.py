@@ -36,8 +36,8 @@ admin.site.register(User, MyUserAdmin)
 
 class ResultInline(admin.TabularInline):
 	model = Result
-	readonly_fields = ('input','output','correct','result')
-	exclude = ('testcase', 'stdout', 'stderr', 'time', 'memory')
+	readonly_fields = ('input','output','correct','result', 'time')
+	exclude = ('testcase', 'stdout', 'stderr', 'memory')
 	def input(self, instance):
 		return instance.testcase.input.read()
 	def output(self, instance):
