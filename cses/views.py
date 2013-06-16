@@ -53,6 +53,10 @@ class ContestSubmitForm(forms.Form):
 
 @contest_page
 def contest(request, contest):
+	now = datetime.now()
+	if now > contest.endTime or now < contest.startTime:
+		message = 'Contest has ended.' if now>contest.endTime else 'Contest has not started.'
+		return render(request, "contestend.html", {'contest':contest, 'message':message})
 	if request.method == 'POST':
 		form = ContestSubmitForm(contest, request.POST, request.FILES)
 		if(form.is_valid() and form.cleaned_data['file']._size <= settings.CSES_MAX_SUBMISSION_SIZE):
