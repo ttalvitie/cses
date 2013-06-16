@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Usage: ./run_boxed.sh <time> <memory> <program> [program args]
 # NOTE: This should be run as the user who runs the program.
 

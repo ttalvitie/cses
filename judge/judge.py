@@ -69,6 +69,7 @@ def runCommand(files, maxTime, maxMemory):
 			destdir = os.path.dirname(dest)
 			if not os.path.exists(destdir):
 				os.makedirs(destdir)
+				setPathPermission(destdir, 0711)
 			shutil.copy(name, os.path.join(td, name))
 		tfiles = [os.path.join(td, f) for f in files]
 		print 'running',tfiles
@@ -77,7 +78,7 @@ def runCommand(files, maxTime, maxMemory):
 		outdir = os.path.join(td, 'out')
 		os.mkdir(outdir)
 		os.chdir(outdir)
-		setPathPermission(outdir, 0111)
+		setPathPermission(outdir, 0711)
 		os.chmod(td, 0777)
 		os.chmod(outdir, 0777)
 #		proc = Popen(tfiles, stdout=PIPE)
@@ -95,6 +96,8 @@ def runCommand(files, maxTime, maxMemory):
 #		return out
 #		proc.wait()
 		outfiles = [f for f in os.listdir(outdir) if os.path.isfile(f)]
+		for f in outfiles:
+			call(['sudo', '-u', 'judgerun', 'chmod', '777', f])
 		res = dict([(f,open(f,'r').read()) for f in outfiles])
 		res['_retval'] = retval
 		res['_time'] = usedTime
