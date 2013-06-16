@@ -23,6 +23,7 @@ def addJudge(host, master):
 class Master(Thread):
 	def __init__(self):
 		Thread.__init__(self)
+		self.daemon = True
 		self.condition = Condition()
 		self.jobs = []
 		# TODO: check for judges not only at start
@@ -64,6 +65,7 @@ class Master(Thread):
 class JudgeSubmission(Thread):
 	def __init__(self, master, submission):
 		Thread.__init__(self)
+		self.daemon = True
 		self.master = master
 		self.submission = submission
 		self.judge = None
@@ -103,7 +105,7 @@ class JudgeSubmission(Thread):
 			print 'judging finished'
 #		except IOError as e:
 		except:
-			print 'JUDGING FAILED', sys.exc_info()[0]
+			print 'JUDGING FAILED', sys.exc_info()
 #			self.submission.judgeResult = Result.INTERNAL_ERROR
 #			self.judge.reconnect()
 			self.submission.judgeResult = Result.PENDING
@@ -114,8 +116,9 @@ class JudgeSubmission(Thread):
 	def judgeCases(self, cases):
 		task = self.submission.task
 		language = self.submission.language
-		minScore = 1000000
+		totalScore = 0
 		memory = 150*1000 if language.name!='java' else 0
+		contestType = self.submission.contest.contestType
 		for case in cases:
 			result = models.Result(submission=self.submission, testcase=case, result=Result.JUDGING, time=0, memory=0)
 			result.save()
@@ -128,11 +131,11 @@ class JudgeSubmission(Thread):
 			if runRes['_retval']<0:
 				print 'bad retval',runRes['_retval']
 				status = runRes['_retval']
-			if status<0:
+			if status<0 and contestType==models.Contest.Type.ICPC:
 				result.result = status
 				self.submission.judgeResult = status
 				result.save()
-				minScore = status
+				totalScore = status
 				break
 			result.save()
 			compareRes = self.judge.runScript([task.evaluator, case.output, result.stdout], 10)
@@ -140,10 +143,13 @@ class JudgeSubmission(Thread):
 			result.result = score
 			result.save()
 			print 'judging file done with score',score
-			minScore = min(minScore, score)
-			if score<0:
+			if score>=0:
+				totalScore += score
+			elif contestType==models.Contest.Type.ICPC:
 				break
-		self.submission.judgeResult = minScore
+		if totalScore>0 and contestType==models.Contest.Type.ICPC:
+			totalScore = 1
+		self.submission.judgeResult = totalScore
 
 
 def sendFile(sock, filename, fileField):
@@ -227,5 +233,4 @@ class JudgeHost:
 
 print('Starting judge master thread')
 master = Master()
-master.daemon = True
 master.start()

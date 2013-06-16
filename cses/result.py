@@ -25,4 +25,4 @@ def penaltyTime(val):
 	return 20 if val<0 else 0
 
 def points(val):
-	return 1 if val==Result.ACCEPTED else 0
+	return 1 if val>0 else 0

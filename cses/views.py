@@ -55,6 +55,7 @@ def contest(request, contest):
 	if request.method == 'POST':
 		form = ContestSubmitForm(contest, request.POST, request.FILES)
 		if(form.is_valid() and form.cleaned_data['file']._size <= settings.CSES_MAX_SUBMISSION_SIZE):
+			print 'adding submission at time',datetime.now()
 			# TODO: error reporting
 			submission = Submission(
 				task=form.cleaned_data['task'],
@@ -105,7 +106,6 @@ def countResult(user, scores, contest):
 		(submission, time, count) = i
 		res = submission.judgeResult
 		resPoints += result.points(res)
-		print 'countresult ',res, result.points(res)
 		if result.points(res)!=0:
 			resTime += time
 			resTime += submission.submitTime()

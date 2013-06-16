@@ -12,6 +12,7 @@ class Task(models.Model):
 	name = models.CharField(max_length=255, unique=True)
 	evaluator = models.FileField(storage=fs, upload_to='task_evaluators/')
 	timeLimit = models.FloatField()
+	score = models.IntegerField()
 
 	def __unicode__(self):
 		return self.name
@@ -37,6 +38,11 @@ class Contest(models.Model):
 	active = models.BooleanField()
 	startTime = models.DateTimeField()
 	endTime = models.DateTimeField()
+
+	CONTEST_TYPES = ((0, 'ICPC'), (1, 'IOI'))
+	contestType = models.IntegerField(choices=CONTEST_TYPES)
+
+	Type = type('Type', (), dict([(b,a) for (a,b) in CONTEST_TYPES]))
 
 	def __unicode__(self):
 		return self.name
