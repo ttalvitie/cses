@@ -5,6 +5,7 @@ from django.contrib import auth
 from django.core.urlresolvers import reverse
 from django.core.files import File
 from django.core.files.base import ContentFile
+from django.contrib.auth.forms import UserCreationForm
 
 from utils import *
 from django.conf import settings
@@ -243,3 +244,13 @@ def taskImport(request):
 	else:
 		form = ImportForm()
 	return render(request, 'import.html', {'form':form})
+
+def register(request):
+	if request.method == 'POST':
+		form = UserCreationForm(request.POST)
+		if form.is_valid():
+			new_user = form.save()
+			return redirect('cses.views.index')
+	else:
+		form = UserCreationForm()
+	return render(request, "register.html", {'form':form})

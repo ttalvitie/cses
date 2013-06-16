@@ -1,0 +1,13 @@
+{% extends "page.html" %}
+
+{% block title %} - Register{% endblock %}
+
+{% block content %}
+<h1>Register</h1>
+
+<form action="{% url "cses.views.register" %}" method="POST">
+{% csrf_token %}
+	{{ form.as_p }}
+<input type="submit" value="Register" />
+</form>
+{% endblock %}
