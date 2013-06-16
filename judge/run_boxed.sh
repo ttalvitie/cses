@@ -2,5 +2,6 @@
 # Usage: ./run_boxed.sh <time> <memory> <program> [program args]
 # NOTE: This should be run as the user who runs the program.
 
-ulimit -u 10 -t $1 -v $2
+ulimit -t $1
+if [ $2 != 0 ]; then ulimit -u 10 -v $2; else ulimit -u 1000; fi
 timeout $1 ${@:3}

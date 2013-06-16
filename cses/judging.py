@@ -70,7 +70,7 @@ class JudgeSubmission(Thread):
 
 	def compileSubmission(self):
 		language = self.submission.language
-		binary = self.judge.runScript([language.compiler, self.submission.source], 30)
+		binary = self.judge.runScript([language.compiler, self.submission.source], 30, 0)
 		if not binary:
 			print 'FAILURE'
 			self.submission.judgeResult = Result.INTERNAL_ERROR
@@ -92,6 +92,7 @@ class JudgeSubmission(Thread):
 			compileRes = self.compileSubmission()
 			self.submission.save()
 			if not compileRes:
+				self.master.addJudge(self.judge)
 				return
 			task = self.submission.task
 			cases = models.TestCase.objects.filter(task=task)
@@ -114,10 +115,11 @@ class JudgeSubmission(Thread):
 		task = self.submission.task
 		language = self.submission.language
 		minScore = 1000000
+		memory = 150*1000 if language.name!='java' else 0
 		for case in cases:
 			result = models.Result(submission=self.submission, testcase=case, result=Result.JUDGING, time=0, memory=0)
 			result.save()
-			runRes = self.judge.runScript([language.runner, self.submission.binary, case.input], task.timeLimit)
+			runRes = self.judge.runScript([language.runner, self.submission.binary, case.input], task.timeLimit, memory)
 			result.stdout.save('stdout', ContentFile(runRes['stdout']))
 			result.stderr.save('stderr', ContentFile(runRes['stderr']))
 			print 'stderr:',runRes['stderr']
@@ -172,8 +174,8 @@ class JudgeHost:
 		self.sock = socket(AF_INET, SOCK_STREAM)
 		self.sock.connect((self.addr, 21094))
 
-	def runScript(self, files, time):
-		print 'running script',files
+	def runScript(self, files, time, memory=150*1000):
+		print 'running script',files,time,memory
 		paths = map(filePath, files)
 		remotePaths = map(remoteFileName, paths)
 		msg = ' '.join(remotePaths)
@@ -190,7 +192,7 @@ class JudgeHost:
 				if line!='OK':
 					return
 #		msg = ' '.join([f[0]+' '+f[1] for f in files])
-		self.sock.send('RUN '+str(time)+' '+msg+'\n')
+		self.sock.send('RUN '+str(time)+' '+str(memory)+' '+msg+'\n')
 		res = self.getLine().split(' ')
 		if res[0]!='OK':
 			print 'Exec failure:',res

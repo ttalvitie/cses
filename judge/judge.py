@@ -52,11 +52,10 @@ def setPathPermission(path, perm):
 		pass
 
 # TODO: get as parameter
-maxMemory = 100*1000
 
 runBoxed = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), 'run_boxed.sh')
 
-def runCommand(files, maxTime):
+def runCommand(files, maxTime, maxMemory):
 	origDir = os.getcwd()
 	try:
 		td = tempfile.mkdtemp()
@@ -121,9 +120,10 @@ def handleLine(s, l, buf):
 		s.send('OK\n')
 	elif cmd=='RUN':
 		time = float(parts[1])
-		files = parts[2:]
+		memory = int(parts[2])
+		files = parts[3:]
 		print 'Starting with files',files
-		out = runCommand(files, time)
+		out = runCommand(files, time, memory)
 		if out:
 			print 'run ok',out.keys()
 			outs = pickle.dumps(out)
