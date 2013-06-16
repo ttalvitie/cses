@@ -79,11 +79,10 @@ def contest(request, contest):
 			)
 			submission.save()
 			judging.master.addSubmission(submission)
-
+		return redirect('/submissions/' + str(contest.id) + '/')
 	else:
-		form = ContestSubmitForm(contest)
-	
-	return render(request, "contest.html", {'contest': contest, 'form': form})
+		form = ContestSubmitForm(contest)	
+		return render(request, "contest.html", {'contest': contest, 'form': form})
 
 @contest_page
 def submissions(request, contest):
@@ -140,16 +139,16 @@ def makeScoreboard(contest, showLinks, user):
 	table = [[(submits[t][u] if t in submits and u in submits[t] else None) for t in tasks] for u in users]
 	uresults = sorted([countResult(i, table[i], contest) for i in xrange(len(users))])
 
-	res = '<table border="1">'
-	res += '<tr><td>Rank</td><td>Team</td><td>Score</td><td>Time</td>'
+	res = '<table border>'
+	res += '<tr><td width=50>Rank</td><td width=250>Team</td><td width=50>Score</td><td width=50>Time</td>'
 #	for task in tasks:
 #		res += '<td>'+task+'</td>'
 	for i in xrange(len(tasks)):
 #		data = chr(ord('A')+i)
 		data = tasks[i]
 		if isIOI:
-			data+=' '+str(taskM[i].score)
-		res += '<td>'+data+'</td>'
+			data+='&nbsp;'+str(taskM[i].score)
+		res += '<td width=50>'+data+'</td>'
 	res += '</tr>'
 	for i in xrange(len(table)):
 		(score, time, uidx) = uresults[i]
