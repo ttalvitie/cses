@@ -79,11 +79,10 @@ def contest(request, contest):
 			)
 			submission.save()
 			judging.master.addSubmission(submission)
-
+		return redirect('/submissions/' + str(contest.id) + '/')
 	else:
-		form = ContestSubmitForm(contest)
-	
-	return render(request, "contest.html", {'contest': contest, 'form': form})
+		form = ContestSubmitForm(contest)	
+		return render(request, "contest.html", {'contest': contest, 'form': form})
 
 @contest_page
 def submissions(request, contest):
