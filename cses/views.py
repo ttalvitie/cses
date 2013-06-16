@@ -104,9 +104,10 @@ def countResult(user, scores, contest):
 		if i == None:
 			continue
 		(submission, time, count) = i
-		res = submission.judgeResult
-		resPoints += result.points(res)
-		if result.points(res)!=0:
+#		res = submission.judgeResult
+		score = submission.points()
+		resPoints += score
+		if score!=0:
 			resTime += time
 			resTime += submission.submitTime()
 	return (-resPoints, resTime, user)

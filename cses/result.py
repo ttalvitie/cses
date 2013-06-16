@@ -23,6 +23,3 @@ def penaltyTime(val):
 	if notDone(val) or val==Result.COMPILE_ERROR:
 		return 0
 	return 20 if val<0 else 0
-
-def points(val):
-	return 1 if val>0 else 0

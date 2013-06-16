@@ -73,10 +73,22 @@ class Submission(models.Model):
 	time = models.DateTimeField()
 
 	def resultString(self):
+		if self.judgeResult>=0 and self.contest.contestType==Contest.Type.IOI:
+			return str(self.judgeResult)
 		return result.toString(self.judgeResult)
 
 	def submitTime(self):
 		return int((self.time - self.contest.startTime).total_seconds()/60)
+
+	def points(self):
+		if self.judgeResult<=0:
+			return 0
+		contest = self.contest
+		if contest.contestType==Contest.Type.ICPC:
+			return 1
+		task = self.task
+		count = TestCase.objects.filter(task=task).count()
+		return self.judgeResult * task.score / count
 
 class Result(models.Model):
 	submission = models.ForeignKey(Submission)
