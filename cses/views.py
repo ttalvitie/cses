@@ -134,6 +134,8 @@ def countResult(user, scores, contest):
 	return (-resPoints, resTime, user)
 
 def makeScoreboard(contest, showLinks, user):
+	if user.is_superuser:
+		showLinks = True
 	submits = contest.latestSubmits()
 	isIOI = contest.contestType==models.Contest.Type.IOI
 	users = map(unicode, contest.users.all() if showLinks or not isIOI else [user])
@@ -179,7 +181,7 @@ def viewSubmission(request, subid):
 		return redirect('cses.views.index')
 	submission = subs[0]
 	contest = submission.contest
-	if datetime.now() <= contest.endTime:
+	if datetime.now() <= contest.endTime and not request.user.is_superuser:
 		return redirect('cses.views.index')
 	code = highlightedCode(submission)
 	return render(request, 'viewsubmission.html', {'submission': submission, 'contest':contest, 'code':code})
