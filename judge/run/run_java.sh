@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 BINARY="$1"
 INPUT="$2"
 cp "$BINARY" binary.zip

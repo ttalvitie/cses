@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Java compile script based on the compile_java.sh in DOMJudge
 

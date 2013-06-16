@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [ -z "`diff -w $1 $2`" ]; then
 	echo 1 > result
 else
