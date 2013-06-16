@@ -74,7 +74,7 @@ class Submission(models.Model):
 
 	def resultString(self):
 		if self.judgeResult>=0 and self.contest.contestType==Contest.Type.IOI:
-			return str(self.judgeResult)
+			return self.points()
 		return result.toString(self.judgeResult)
 
 	def submitTime(self):

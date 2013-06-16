@@ -4,6 +4,7 @@
 {% block contestcontent %}
 <h1>Contest '{{ contest.name }}'</h1>
 <h2>Submission {{ submission.id }}: {{ submission.user }} - {{ submission.task }}</h2>
+Evaluation: {{ submission.resultString }}
 
 {{ code|safe }}
 
