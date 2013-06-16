@@ -146,6 +146,7 @@ class JudgeSubmission(Thread):
 			if score>=0:
 				totalScore += score
 			elif contestType==models.Contest.Type.ICPC:
+				totalScore = score
 				break
 		if totalScore>0 and contestType==models.Contest.Type.ICPC:
 			totalScore = 1

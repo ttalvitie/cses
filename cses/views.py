@@ -9,6 +9,7 @@ from django.conf import settings
 import judging
 import result
 from datetime import datetime
+import models
 
 class LoginForm(forms.Form):
 	username = forms.CharField()
@@ -88,13 +89,18 @@ def resultColor(res):
 		return '#000000'
 	return '#FF0000'
 
-def submissionCell(submitData):
+def submissionCell(submitData, contestType):
 	if submitData == None:
 		return '<td></td>'
 	(submission, _, count) = submitData
 	time = submission.submitTime()
 	res = submission.judgeResult
-	content = str(count)+'<br/>'+str(time)
+	content = ''
+	if contestType==models.Contest.Type.ICPC:
+		content = str(count)+'<br/>'+str(time)
+	else:
+		content = str(submission.points())+'<br/>'+str(time)
+	
 	return '<td bgcolor="%s" width="%d" height="%d">%s</td>' % (resultColor(res), 40, 40, content)
 
 def countResult(user, scores, contest):
@@ -130,7 +136,7 @@ def makeScoreboard(contest):
 		(score, time, uidx) = uresults[i]
 		res += '<tr><td>'+str(1+i)+'</td><td>'+users[uidx]+'</td><td>'+str(-score)+'</td><td>'+str(time)+'</td>'
 		row = table[uidx]
-		res += ''.join([submissionCell(s) for s in row])
+		res += ''.join([submissionCell(s, contest.contestType) for s in row])
 		res += '</tr>'
 	res += '</table>'
 	return res
