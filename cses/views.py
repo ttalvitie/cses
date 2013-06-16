@@ -129,9 +129,10 @@ def countResult(user, scores, contest):
 			resTime += submission.submitTime()
 	return (-resPoints, resTime, user)
 
-def makeScoreboard(contest, showLinks):
+def makeScoreboard(contest, showLinks, user):
 	submits = contest.latestSubmits()
-	users = map(unicode, contest.users.all())
+	isIOI = contest.contestType==models.Contest.Type.IOI
+	users = map(unicode, contest.users.all() if showLinks or not isIOI else [user])
 	taskM = contest.tasks.all()
 	tasks = map(unicode, taskM.order_by('name'))
 	table = [[(submits[t][u] if t in submits and u in submits[t] else None) for t in tasks] for u in users]
@@ -143,7 +144,7 @@ def makeScoreboard(contest, showLinks):
 #		res += '<td>'+task+'</td>'
 	for i in xrange(len(tasks)):
 		data = chr(ord('A')+i)
-		if contest.contestType==models.Contest.Type.IOI:
+		if isIOI:
 			data+=' '+str(taskM[i].score)
 		res += '<td>'+data+'</td>'
 	res += '</tr>'
@@ -158,7 +159,7 @@ def makeScoreboard(contest, showLinks):
 
 @contest_page
 def scoreboard(request, contest):
-	return render(request, 'scoreboard.html', {'contest': contest, 'scoreboard': makeScoreboard(contest, datetime.now()>contest.endTime)})
+	return render(request, 'scoreboard.html', {'contest': contest, 'scoreboard': makeScoreboard(contest, datetime.now()>contest.endTime, request.user)})
 
 def highlightedCode(submission):
 	data = submission.source.read()
