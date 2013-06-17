@@ -205,6 +205,16 @@ class ImportForm(forms.Form):
 	data = forms.FileField()
 
 from zipfile import ZipFile
+def outfilename(infile):
+	parts = infile.split('.')
+	if len(parts)<2:
+		return None
+	if parts[-1]=='in':
+		parts[-1] = 'ans'
+	elif parts[-2]=='in':
+		parts[-2] = 'out'
+	return '.'.join(parts)
+
 def importArchive(data, contest):
 	z = ZipFile(data, 'r')
 	tasks = list(set([i.split('/')[0] for i in z.namelist()]))
@@ -225,15 +235,13 @@ def importArchive(data, contest):
 	print tasks
 	nameset = set(z.namelist())
 	for i in sorted(z.namelist()):
-		parts = i.split('.')
-		if len(parts)<2 or parts[-2]!='in':
+		out = outfilename(i)
+		if out == None:
 			continue
-		task = i.split('/')[0]
-		parts[-2] = 'out'
-		out = '.'.join(parts)
 		if out not in nameset:
 			print 'Warning: no output-pair for input file',i
 			continue
+		task = i.split('/')[0]
 		print 'found input-output pair',i,out
 		case = models.TestCase(task=taskModels[task])
 		case.input.save(i, ContentFile(z.read(i)))
