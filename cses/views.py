@@ -178,7 +178,8 @@ def scoreboard(request, cid):
 		return redirect('cses.views.index')
 	contest = contests[0]
 	now = datetime.now()
-	return render(request, 'scoreboard.html', {'contest': contest, 'scoreboard': makeScoreboard(contest, now>contest.endTime, request.user), 'time': now, 'remainingSeconds': (contest.endTime-now).seconds})
+	dt = contest.endTime-now
+	return render(request, 'scoreboard.html', {'contest': contest, 'scoreboard': makeScoreboard(contest, now>contest.endTime, request.user), 'time': now, 'remainingSeconds': dt.seconds+24*3600*dt.days})
 
 def highlightedCode(submission):
 	data = submission.source.read()
