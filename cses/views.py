@@ -11,7 +11,7 @@ from utils import *
 from django.conf import settings
 import judging
 import result
-from datetime import datetime
+from datetime import datetime, timedelta
 import models
 
 from pygments import highlight
@@ -178,7 +178,7 @@ def scoreboard(request, cid):
 		return redirect('cses.views.index')
 	contest = contests[0]
 	now = datetime.now()
-	dt = contest.endTime-now
+	dt = contest.endTime-now if now<contest.endTime else timedelta(seconds=0)
 	return render(request, 'scoreboard.html', {'contest': contest, 'scoreboard': makeScoreboard(contest, now>contest.endTime, request.user), 'time': now, 'remainingSeconds': dt.seconds+24*3600*dt.days})
 
 def highlightedCode(submission):
