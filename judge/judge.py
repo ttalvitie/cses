@@ -95,9 +95,9 @@ def runCommand(files, maxTime, maxMemory):
 #		out = proc.communicate()[0]
 #		return out
 #		proc.wait()
+		for f in os.listdir(outdir):
+			call(['sudo', '-u', 'judgerun', 'chmod', '-R', '777', f])
 		outfiles = [f for f in os.listdir(outdir) if os.path.isfile(f)]
-		for f in outfiles:
-			call(['sudo', '-u', 'judgerun', 'chmod', '777', f])
 		res = dict([(f,open(f,'r').read()) for f in outfiles])
 		res['_retval'] = retval
 		res['_time'] = usedTime
