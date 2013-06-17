@@ -138,7 +138,10 @@ def makeScoreboard(contest, showLinks, user):
 		showLinks = True
 	submits = contest.latestSubmits()
 	isIOI = contest.contestType==models.Contest.Type.IOI
-	users = map(unicode, contest.users.all() if showLinks or not isIOI else [user])
+	userM = contest.users.all() if showLinks or not isIOI else [user]
+	if not user.is_superuser:
+		userM = filter(lambda u: not u.is_superuser , userM)
+	users = map(unicode, userM)
 	taskM = contest.tasks.all().order_by('contesttask__order')
 	tasks = map(unicode, taskM)
 	table = [[(submits[t][u] if t in submits and u in submits[t] else None) for t in tasks] for u in users]
