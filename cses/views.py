@@ -39,7 +39,7 @@ def login(request):
 def logout(request):
 	if request.method == 'GET':
 		auth.logout(request)
-	
+
 	return redirect('cses.views.login')
 
 @require_login
@@ -50,12 +50,12 @@ def index(request):
 	else:
 		return render(request, "index.html", {'contests': contests})
 
-	
+
 class ContestSubmitForm(forms.Form):
 	task = forms.ModelChoiceField(queryset=Task.objects.none(), required=True)
 	file = forms.FileField()
 	language = forms.ModelChoiceField(queryset=Language.objects.all(), required=True)
-	
+
 	def __init__(self, contest, *args, **kwargs):
 		super(ContestSubmitForm, self).__init__(*args, **kwargs)
 		self.fields['task'].queryset = contest.tasks.all()
@@ -84,7 +84,7 @@ def contest(request, contest):
 			judging.master.addSubmission(submission)
 		return redirect('/submissions/' + str(contest.id) + '/')
 	else:
-		form = ContestSubmitForm(contest)	
+		form = ContestSubmitForm(contest)
 		return render(request, "contest.html", {'contest': contest, 'form': form})
 
 @contest_page
@@ -92,8 +92,11 @@ def submissions(request, contest):
 	userSubs = Submission.objects.filter(user=request.user, contest=contest).order_by('-time')
 	return render(request, 'submissions.html', {'submissions': userSubs, 'contest': contest})
 
-def resultColor(res):
+def resultColor(submission):
+	res = submission.judgeResult
 	if res>0:
+		if submission.contest.contestType==models.Contest.Type.IOI and submission.points()<submission.task.score:
+			return '#00FFFF'
 		return '#00FF00'
 	if result.notDone(res):
 		return '#FFFF00'
@@ -115,8 +118,8 @@ def submissionCell(submitData, contestType, showLinks):
 	if showLinks:
 		url = reverse('cses.views.viewSubmission', args=(submission.id,))
 		content = '<a href="%s">%s</a>' % (url, content)
-	
-	return '<td bgcolor="%s" width="%d" height="%d">%s</td>' % (resultColor(res), 40, 40, content)
+
+	return '<td bgcolor="%s" width="%d" height="%d">%s</td>' % (resultColor(submission), 40, 40, content)
 
 def countResult(user, scores, contest):
 	resTime = 0
