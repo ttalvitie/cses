@@ -140,7 +140,7 @@ class JudgeSubmission(Thread):
 					break
 				continue
 			result.save()
-			compareRes = self.judge.runScript([task.evaluator, case.output, result.stdout, result.stdin], 10)
+			compareRes = self.judge.runScript([task.evaluator, case.output, result.stdout, case.input], 10)
 			score = int(compareRes['result'])
 			result.result = score
 			result.save()
