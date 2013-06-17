@@ -45,13 +45,14 @@ if [ -z "$MAINCLASS" ]; then
 	echo "Error: no 'main' found in any class file." >> log
 	exit 1
 fi
-if [ ! -f "$MAINCLASS.class" ]; then
-	echo "No $MAINCLASS.class generated." >> log
-	exit 1
-fi
+#if [ ! -f "$MAINCLASS.class" ]; then
+#	echo "No $MAINCLASS.class generated." >> log
+#	exit 1
+#fi
 
 echo $MAINCLASS > mainclass.txt
-zip binary.zip mainclass.txt *.class
+zip -r binary.zip *
+#zip binary.zip mainclass.txt *.class
 mv binary.zip binary
 rm mainclass.txt *.class
 
