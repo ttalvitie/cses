@@ -141,7 +141,7 @@ def makeScoreboard(contest, showLinks, user):
 		showLinks = True
 	submits = contest.latestSubmits()
 	isIOI = contest.contestType==models.Contest.Type.IOI
-	userM = contest.users.all() if showLinks or not isIOI else [user]
+	userM = contest.users.all() if showLinks or not isIOI else contest.users.filter(id=user.id)
 	if not user.is_superuser:
 		userM = filter(lambda u: not u.is_superuser , userM)
 	users = map(unicode, userM)
@@ -170,8 +170,13 @@ def makeScoreboard(contest, showLinks, user):
 	res += '</table>'
 	return res
 
-@contest_page
-def scoreboard(request, contest):
+#@contest_page
+#def scoreboard(request, contest):
+def scoreboard(request, cid):
+	contests = Contest.objects.filter(id=cid)
+	if len(contests) == 0:
+		return redirect('cses.views.index')
+	contest = contests[0]
 	now = datetime.now()
 	return render(request, 'scoreboard.html', {'contest': contest, 'scoreboard': makeScoreboard(contest, now>contest.endTime, request.user), 'time': now, 'remainingSeconds': (contest.endTime-now).seconds})
 
