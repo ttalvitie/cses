@@ -4,5 +4,6 @@
 {% block contestcontent %}
 <!--<h1>Contest '{{ contest.name }}'</h1>-->
 <h1>Scoreboard</h1>
+Start time: {{ contest.startTime }} ; End time: {{ contest.endTime }} ; Current time: {{ time }}
 {{ scoreboard|safe }}
 {% endblock %}

@@ -172,7 +172,7 @@ def makeScoreboard(contest, showLinks, user):
 
 @contest_page
 def scoreboard(request, contest):
-	return render(request, 'scoreboard.html', {'contest': contest, 'scoreboard': makeScoreboard(contest, datetime.now()>contest.endTime, request.user)})
+	return render(request, 'scoreboard.html', {'contest': contest, 'scoreboard': makeScoreboard(contest, datetime.now()>contest.endTime, request.user), 'time': datetime.now()})
 
 def highlightedCode(submission):
 	data = submission.source.read()
