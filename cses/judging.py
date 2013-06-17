@@ -131,12 +131,14 @@ class JudgeSubmission(Thread):
 			if runRes['_retval']<0:
 				print 'bad retval',runRes['_retval']
 				status = runRes['_retval']
-			if status<0 and contestType==models.Contest.Type.ICPC:
+			if status<0:
 				result.result = status
 				self.submission.judgeResult = status
 				result.save()
-				totalScore = status
-				break
+				if contestType==models.Contest.Type.ICPC:
+					totalScore = status
+					break
+				continue
 			result.save()
 			compareRes = self.judge.runScript([task.evaluator, case.output, result.stdout], 10)
 			score = int(compareRes['result'])
