@@ -98,7 +98,7 @@ def resultColor(res):
 	if result.notDone(res):
 		return '#FFFF00'
 	if res==0:
-		return '#000000'
+		return '#FF0000'
 	return '#FF0000'
 
 def submissionCell(submitData, contestType, showLinks):
