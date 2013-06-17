@@ -4,6 +4,31 @@
 {% block contestcontent %}
 <!--<h1>Contest '{{ contest.name }}'</h1>-->
 <h1>Scoreboard</h1>
-Start time: {{ contest.startTime }} ; End time: {{ contest.endTime }} ; Current time: {{ time }}
+Start time: {{ contest.startTime }} ; End time: {{ contest.endTime }}
+<div id="counter"></div>
+<script>
+	var time={{ remainingSeconds }}+1;
+
+	function counter() {
+		if (time > 0) time--;
+		if (time < 0) time=0;
+		var d = time;
+		var c = document.getElementById("counter");
+		var s = d%60;
+		d = (d-s)/60;
+		var m = d%60;
+		d = (d-m)/60;
+		if (s < 10) s = "0"+s;
+		else s = ""+s;
+		if (m < 10) m = "0"+m;
+		else m = ""+m;
+		if (d < 10) d = "0"+d;
+		else d = ""+d;
+		c.innerHTML = 'Remaining time: ' + d + ":" + m + ":" + s;
+	}
+	counter();
+	setInterval("counter()", 1000);
+</script>
+
 {{ scoreboard|safe }}
 {% endblock %}
