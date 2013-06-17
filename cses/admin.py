@@ -38,11 +38,11 @@ class ResultInline(admin.TabularInline):
 	readonly_fields = ('input','output','correct','result', 'time')
 	exclude = ('testcase', 'stdout', 'stderr', 'memory')
 	def input(self, instance):
-		return instance.testcase.input.read()
+		return instance.testcase.input.read(1000)
 	def output(self, instance):
-		return instance.stdout.read()
+		return instance.stdout.read(1000)
 	def correct(self, instance):
-		return instance.testcase.output.read()
+		return instance.testcase.output.read(1000)
 	input.short_description = 'stdin'
 	output.short_description = 'stdout'
 	correct.short_description = 'correct'
