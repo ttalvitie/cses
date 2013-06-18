@@ -110,7 +110,7 @@ class JudgeSubmission(Thread):
 #			self.judge.reconnect()
 			self.submission.judgeResult = Result.PENDING
 			self.submission.save()
-			self.master.addSubmission(self.submission)
+#			self.master.addSubmission(self.submission)
 			addJudge(self.judge.addr, self.master)
 
 	def judgeCases(self, cases):
