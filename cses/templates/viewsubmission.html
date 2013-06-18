@@ -5,7 +5,9 @@
 <h1>Submission {{ submission.id }}: {{ submission.user }} - {{ submission.task }}</h1>
 <p>Evaluation: {{ submission.resultString }} </p>
 <p>Compiler output:<br/>
-{{ submission.compileResult }} </p>
+<pre>
+{{ submission.compileResult }}
+</pre></p>
 
 {{ code|safe }}
 
