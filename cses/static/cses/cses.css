@@ -1,0 +1,5 @@
+.list tr { border-bottom: 1px solid silver; }
+.list tr.roweven { backgroud: ededed; }
+.list tr:hover { backgroud: #ffffcc; }
+.list thead tr { border-bottom-color: black; }
+.list thead tr:hover { backgroud: white; }

@@ -151,7 +151,7 @@ def makeScoreboard(contest, showLinks, user):
 	uresults = sorted([countResult(i, table[i], contest) for i in xrange(len(users))])
 
 	res = '<table border>'
-	res += '<tr><td width=50>Rank</td><td width=250>Team</td><td width=50>Score</td><td width=50>Time</td>'
+	res += '<thead><tr><td width=50>Rank</td><td width=250>Team</td><td width=50>Score</td><td width=50>Time</td>'
 #	for task in tasks:
 #		res += '<td>'+task+'</td>'
 	for i in xrange(len(tasks)):
@@ -160,7 +160,7 @@ def makeScoreboard(contest, showLinks, user):
 		if isIOI:
 			data+='&nbsp;'+str(taskM[i].score)
 		res += '<td width=50>'+data+'</td>'
-	res += '</tr>'
+	res += '</tr></thead>'
 	for i in xrange(len(table)):
 		(score, time, uidx) = uresults[i]
 		res += '<tr><td>'+str(1+i)+'</td><td>'+users[uidx]+'</td><td>'+str(-score)+'</td><td>'+str(time)+'</td>'

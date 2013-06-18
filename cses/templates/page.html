@@ -3,14 +3,17 @@
 <head>
 <title>CSES{% block title %}{% endblock %}</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/static/cses/cses.css" type="text/css"/>
 </head>
+<a href="{% url 'cses.views.index' %}">
 <table>
 <tr><td>
-<img src="/static/cses/logo.png">
+<img src="/static/cses/logo.png"/>
 </td><td>
 <p><i>&nbsp;&nbsp;Contest Submission Evaluation System</i></p>
 </td></tr>
 </table>
+</a>
 <hr>
 <body>
 {% block content %}{% endblock %}
