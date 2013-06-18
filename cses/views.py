@@ -151,7 +151,7 @@ def makeScoreboard(contest, showLinks, user):
 	uresults = sorted([countResult(i, table[i], contest) for i in xrange(len(users))])
 
 	res = '<table border class="list">'
-	res += '<thead><tr><th width=50>Rank</th><th width=250>Team</th><th width=50>Score</th><th width=50>Time</th>'
+	res += '<thead><tr><th width=50>Rank</th><th width=100>Team</th><th width=50>Score</th><th width=50>Time</th>'
 #	for task in tasks:
 #		res += '<td>'+task+'</td>'
 	for i in xrange(len(tasks)):
