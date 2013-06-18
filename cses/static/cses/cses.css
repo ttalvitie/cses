@@ -1,5 +1,28 @@
+.list {
+	border-collapse: collapse;
+//	border-spacing: 10px 0;
+}
+.list td, .list th {
+	vertical-align: bottom;
+}
 .list tr { border-bottom: 1px solid silver; }
 .list tr.roweven { backgroud: ededed; }
 .list tr:hover { backgroud: #ffffcc; }
 .list thead tr { border-bottom-color: black; }
+.list thead td { }
 .list thead tr:hover { backgroud: white; }
+.list td a { display: block; height:100%; width:100%; }
+
+.sol {
+	font-weight: bold;
+	font-variant: small-caps;
+}
+//.sol_correct { color: green; }
+//.sol_partial { color: lightblue; }
+//.sol_incorrect { color: red; }
+//.sol_notdone { color: gray; }
+
+tr.sol_correct { background-color: #ccffcc; }
+tr.sol_incorrect { background-color: #ffcccc; }
+tr.sol_notdone { background-color: #eeeeee; }
+tr.sol_partial { background-color: #ffccff; }

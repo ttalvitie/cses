@@ -4,13 +4,21 @@
 {% block contestcontent %}
 <!--<h1>Contest '{{ contest.name }}'</h1>-->
 <h1>Submissions</h1>
-<table border width="400" class="list">
-	<thead><tr><td>Submission time</td><td>Task</td><td>Evaluation</td></tr></thead>
+<table border="1" class="list">
+	<thead><tr>
+		<th width="200">Submission time</th>
+		<th width="80">Task</th>
+		<th width="200">Evaluation</th>
+	</tr></thead>
 {% for submission in submissions %}
-<tr>
+<tr class="{{ submission.colorType }}">
 	<td>{{ submission.time }}</td>
 	<td>{{ submission.task }}</td>
-	<td><a href="{% url 'cses.views.viewSubmission' submission.id %}">{{ submission.resultString }}</a></td>
+	<td><a href="{% url 'cses.views.viewSubmission' submission.id %}">
+			<!--			<span class="sol {{ submission.colorType }}"> -->
+				{{ submission.resultString }}
+				<!--			</span> -->
+	</a></td>
 </tr>
 {% endfor %}
 {% endblock %}

@@ -97,6 +97,13 @@ class Submission(models.Model):
 		count = TestCase.objects.filter(task=task).count()
 		return self.judgeResult * task.score / count
 
+	def colorType(self):
+		if result.notDone(self.judgeResult):
+			return 'sol_notdone'
+		if self.judgeResult<=0:
+			return 'sol_incorrect'
+		return 'sol_correct'
+
 class Result(models.Model):
 	submission = models.ForeignKey(Submission)
 	testcase = models.ForeignKey(TestCase)

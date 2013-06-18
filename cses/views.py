@@ -150,8 +150,8 @@ def makeScoreboard(contest, showLinks, user):
 	table = [[(submits[t][u] if t in submits and u in submits[t] else None) for t in tasks] for u in users]
 	uresults = sorted([countResult(i, table[i], contest) for i in xrange(len(users))])
 
-	res = '<table border>'
-	res += '<thead><tr><td width=50>Rank</td><td width=250>Team</td><td width=50>Score</td><td width=50>Time</td>'
+	res = '<table border class="list">'
+	res += '<thead><tr><th width=50>Rank</th><th width=250>Team</th><th width=50>Score</th><th width=50>Time</th>'
 #	for task in tasks:
 #		res += '<td>'+task+'</td>'
 	for i in xrange(len(tasks)):
@@ -159,11 +159,11 @@ def makeScoreboard(contest, showLinks, user):
 		data = tasks[i]
 		if isIOI:
 			data+='&nbsp;'+str(taskM[i].score)
-		res += '<td width=50>'+data+'</td>'
+		res += '<th width=50>'+data+'</th>'
 	res += '</tr></thead>'
 	for i in xrange(len(table)):
 		(score, time, uidx) = uresults[i]
-		res += '<tr><td>'+str(1+i)+'</td><td>'+users[uidx]+'</td><td>'+str(-score)+'</td><td>'+str(time)+'</td>'
+		res += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td>' % (str(i+1), users[uidx], str(-score), str(time))
 		row = table[uidx]
 		res += ''.join([submissionCell(s, contest.contestType, showLinks) for s in row])
 		res += '</tr>'

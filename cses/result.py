@@ -9,7 +9,7 @@ class Result:
 	ACCEPTED = 1
 
 names = filter(lambda x: x[0]!='_', dir(Result))
-numNames = dict([(getattr(Result,i),i) for i in names])
+numNames = dict([(getattr(Result,i),i.replace('_',' ')) for i in names])
 
 def toString(result):
 	if result not in numNames:
