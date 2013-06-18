@@ -45,7 +45,8 @@ class Master(Thread):
 	def startJobs(self):
 		# At this point self.condition is already acquired
 		while self.jobs and self.judges:
-			job = self.jobs.pop()
+			job = self.jobs[0]
+			self.jobs = self.jobs[1:]
 			job.judge = self.judges.pop()
 			job.start()
 
