@@ -102,6 +102,8 @@ class Submission(models.Model):
 			return 'sol_notdone'
 		if self.judgeResult<=0:
 			return 'sol_incorrect'
+		if self.contest.contestType==Contest.Type.IOI and self.judgeResult<TestCase.objects.filter(task=self.task).count():
+			return 'sol_partial'
 		return 'sol_correct'
 
 class Result(models.Model):

@@ -25,4 +25,4 @@
 tr.sol_correct { background-color: #ccffcc; }
 tr.sol_incorrect { background-color: #ffcccc; }
 tr.sol_notdone { background-color: #eeeeee; }
-tr.sol_partial { background-color: #ffccff; }
+tr.sol_partial { background-color: #cceeff; }
