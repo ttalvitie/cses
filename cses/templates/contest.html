@@ -12,6 +12,26 @@
 <tr><td>Source file:</td><td>&nbsp;</td><td> {{ form.file }}</td></tr>
 <tr><td>Language:</td><td>&nbsp;</td><td>{{ form.language }}</td></tr>
 </table>
+<script>
+	var f = document.getElementById("id_file");
+	var l = document.getElementById("id_language");
+
+	function copy() {
+		var v = f.value;
+		var r = "";
+		if (v.indexOf(".c") >= 0) r = "c";
+		if (v.indexOf(".cpp") >= 0) r = "c++";
+		if (v.indexOf(".java") >= 0) r = "java";
+		if (r == "") return;
+		for (var i = 0; i < l.length; i++) {
+			if (l.options[i].text == r) {
+				l.value = i;
+				return;
+			}
+		}
+	}
+	f.onchange = copy;
+</script>
 <p>
 <input type="submit" value="Submit" />
 </p>
