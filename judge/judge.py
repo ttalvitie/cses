@@ -131,6 +131,7 @@ def handleLine(s, l, buf):
 		if out:
 			print 'run ok',out.keys()
 			outs = pickle.dumps(out)
+			print 'sending pickled',len(outs)
 			s.send("OK "+str(len(outs))+'\n'+outs)
 		else:
 			s.send("FAIL\n")

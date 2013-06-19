@@ -212,6 +212,10 @@ class JudgeHost:
 			print 'Exec failure:',res
 			return
 		size = int(res[1])
+		print 'run res len',size
+		data = self.getData(size)
+		print 'download complete'
+		return pickle.loads(data)
 		return pickle.loads(self.getData(size))
 
 	def getLine(self):
@@ -226,7 +230,8 @@ class JudgeHost:
 
 	def getData(self, size):
 		while len(self.buf) < size:
-			self.buf += self.sock.recv(1024)
+#			self.buf += self.sock.recv(1024)
+			self.buf += self.sock.recv(size-len(self.buf))
 		res = self.buf[:size]
 		self.buf = self.buf[size:]
 		return res
