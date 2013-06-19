@@ -7,7 +7,7 @@ from django.shortcuts import redirect
 def getUserContests(user):
 	"""Get queryset of contests available for 'user'."""
 	query = Q(active=True) & (Q(users=user) | Q(groups=user.groups.all()))
-	return Contest.objects.filter(query)
+	return Contest.objects.filter(query).distinct()
 
 def require_login(func):
 	"""Decorator for views that require login."""

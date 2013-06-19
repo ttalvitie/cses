@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.core.files import File
 from django.core.files.base import ContentFile
 from django.contrib.auth.forms import UserCreationForm
+from django.db.models import Q
 
 from utils import *
 from django.conf import settings
@@ -141,7 +142,11 @@ def makeScoreboard(contest, showLinks, user):
 		showLinks = True
 	submits = contest.latestSubmits()
 	isIOI = contest.contestType==models.Contest.Type.IOI
-	userM = contest.users.all() if showLinks or not isIOI else contest.users.filter(id=user.id)
+	userM = None
+	if showLinks or not isIOI:
+		userM = User.objects.filter(Q(groups=contest.groups.all()) | Q(contest=contest)).distinct()
+	else:
+		userM = contest.users.filter(id=user.id)
 	if not user.is_superuser:
 		userM = filter(lambda u: not u.is_superuser , userM)
 	users = map(unicode, userM)
