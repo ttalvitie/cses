@@ -26,3 +26,12 @@ tr.sol_correct { background-color: #ccffcc; }
 tr.sol_incorrect { background-color: #ffcccc; }
 tr.sol_notdone { background-color: #eeeeee; }
 tr.sol_partial { background-color: #cceeff; }
+
+//td.sol_correct { background-color: #55ff55; }
+//td.sol_incorrect { background-color: #ff5555; }
+//td.sol_notdone { background-color: #ffff55; }
+//td.sol_partial { background-color: #55eeff; }
+td.sol_correct { background-color: #00ff00; }
+td.sol_incorrect { background-color: #ff0000; }
+td.sol_notdone { background-color: #ffff00; }
+td.sol_partial { background-color: #00ffff; }

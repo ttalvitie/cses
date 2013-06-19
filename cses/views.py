@@ -93,18 +93,6 @@ def submissions(request, contest):
 	userSubs = Submission.objects.filter(user=request.user, contest=contest).order_by('-time')
 	return render(request, 'submissions.html', {'submissions': userSubs, 'contest': contest})
 
-def resultColor(submission):
-	res = submission.judgeResult
-	if res>0:
-		if submission.contest.contestType==models.Contest.Type.IOI and submission.points()<submission.task.score:
-			return '#00FFFF'
-		return '#00FF00'
-	if result.notDone(res):
-		return '#FFFF00'
-	if res==0:
-		return '#FF0000'
-	return '#FF0000'
-
 def submissionCell(submitData, contestType, showLinks):
 	if submitData == None:
 		return '<td></td>'
@@ -120,7 +108,7 @@ def submissionCell(submitData, contestType, showLinks):
 		url = reverse('cses.views.viewSubmission', args=(submission.id,))
 		content = '<a href="%s">%s</a>' % (url, content)
 
-	return '<td bgcolor="%s" width="%d" height="%d">%s</td>' % (resultColor(submission), 40, 40, content)
+	return '<td class="%s" width="%d" height="%d">%s</td>' % (submission.colorType(), 40, 40, content)
 
 def countResult(user, scores, contest):
 	resTime = 0
