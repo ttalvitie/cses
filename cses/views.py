@@ -134,7 +134,7 @@ def makeScoreboard(contest, showLinks, user):
 	if showLinks or not isIOI:
 		userM = User.objects.filter(Q(groups=contest.groups.all()) | Q(contest=contest)).distinct()
 	else:
-		userM = contest.users.filter(id=user.id)
+		userM = User.objects.filter((Q(groups=contest.groups.all()) | Q(contest=contest)) & Q(id=user.id)).distinct()
 	if not user.is_superuser:
 		userM = filter(lambda u: not u.is_superuser , userM)
 	users = map(unicode, userM)
