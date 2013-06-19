@@ -124,11 +124,14 @@ class JudgeSubmission(Thread):
 			result = models.Result(submission=self.submission, testcase=case, result=Result.JUDGING, time=0, memory=0)
 			result.save()
 			runRes = self.judge.runScript([language.runner, self.submission.binary, case.input], task.timeLimit, memory)
-			result.stdout.save('stdout', ContentFile(runRes['stdout']))
-			result.stderr.save('stderr', ContentFile(runRes['stderr']))
-			result.time = runRes['_time']
-			print 'stderr:',runRes['stderr']
-			status = int(runRes['status'])
+			if not 'stdout' in runRes or not 'stderr' in runRes or not 'status' in runRes:
+				status = Result.RUNTIME_ERROR
+			else:
+				result.stdout.save('stdout', ContentFile(runRes['stdout']))
+				result.stderr.save('stderr', ContentFile(runRes['stderr']))
+				result.time = runRes['_time']
+				print 'stderr:',runRes['stderr']
+				status = int(runRes['status'])
 			if runRes['_retval']<0:
 				print 'bad retval',runRes['_retval']
 				status = runRes['_retval']
