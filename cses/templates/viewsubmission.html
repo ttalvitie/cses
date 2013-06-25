@@ -11,4 +11,16 @@
 
 {{ code|safe }}
 
+<h2>Comments</h2>
+{% for comment in comments %}
+<h3>{{ comment.user }} - {{ comment.time }}</h3>
+{{ comment.text|linebreaks }}
+{% endfor %}
+
+<form method="post">
+{% csrf_token %}
+{{ commentform }}
+<input type="submit" value="Send" />
+</form>
+
 {% endblock %}

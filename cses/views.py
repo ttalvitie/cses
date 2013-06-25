@@ -7,6 +7,7 @@ from django.core.files import File
 from django.core.files.base import ContentFile
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
+from django.forms import widgets
 
 from utils import *
 from django.conf import settings
@@ -180,6 +181,9 @@ def highlightedCode(submission):
 	formatter = HtmlFormatter(linenos=True, noclasses=True)
 	return highlight(data, lexer, formatter)
 
+class CommentForm(forms.Form):
+	comment = forms.CharField(widget=widgets.Textarea)
+
 @require_login
 def viewSubmission(request, subid):
 	subs = models.Submission.objects.filter(id=subid)
@@ -190,7 +194,19 @@ def viewSubmission(request, subid):
 	if datetime.now() <= contest.endTime and not request.user.is_superuser and submission.user!=request.user:
 		return redirect('cses.views.index')
 	code = highlightedCode(submission)
-	return render(request, 'viewsubmission.html', {'submission': submission, 'contest':contest, 'code':code})
+	if request.method=='POST':
+		form = CommentForm(request.POST)
+		if form.is_valid():
+			comment = models.Comment(
+					submission=submission,
+					user=request.user,
+					text=form.cleaned_data['comment'],
+					line=-1,
+					time=datetime.now())
+			comment.save()
+	comments = models.Comment.objects.filter(submission=submission).order_by('time')
+	form = CommentForm()
+	return render(request, 'viewsubmission.html', {'submission': submission, 'contest':contest, 'code':code, 'comments': comments, 'commentform': form})
 
 
 class ImportForm(forms.Form):

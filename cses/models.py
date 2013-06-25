@@ -128,3 +128,10 @@ class JudgeHost(models.Model):
 
 	def __unicode__(self):
 		return self.name
+
+class Comment(models.Model):
+	submission = models.ForeignKey(Submission)
+	user = models.ForeignKey(User)
+	text = models.TextField()
+	line = models.IntegerField()
+	time = models.DateTimeField()
