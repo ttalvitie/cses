@@ -8,13 +8,14 @@
 <pre>
 {{ submission.compileResult }}
 </pre></p>
+{% load bbcode %}
 
 {{ code|safe }}
 
 <h2>Comments</h2>
 {% for comment in comments %}
 <h3>{{ comment.user }} - {{ comment.time }}</h3>
-{{ comment.text|linebreaks }}
+{{ comment.text|bbcode }}
 {% endfor %}
 
 <form method="post">
