@@ -126,6 +126,11 @@ def countResult(user, scores, contest):
 			resTime += submission.submitTime()
 	return (-resPoints, resTime, user)
 
+def userName(user):
+	if user.first_name!='':
+		return user.first_name
+	return unicode(user)
+
 def makeScoreboard(contest, showLinks, user):
 	if user.is_superuser:
 		showLinks = True
@@ -139,6 +144,7 @@ def makeScoreboard(contest, showLinks, user):
 	if not user.is_superuser:
 		userM = filter(lambda u: not u.is_superuser , userM)
 	users = map(unicode, userM)
+	userNames = map(userName, userM)
 	taskM = contest.tasks.all().order_by('contesttask__order')
 	tasks = map(unicode, taskM)
 	table = [[(submits[t][u] if t in submits and u in submits[t] else None) for t in tasks] for u in users]
@@ -157,7 +163,7 @@ def makeScoreboard(contest, showLinks, user):
 	res += '</tr></thead>'
 	for i in xrange(len(table)):
 		(score, time, uidx) = uresults[i]
-		res += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td>' % (str(i+1), users[uidx], str(-score), str(time))
+		res += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td>' % (str(i+1), userName(userM[uidx]), str(-score), str(time))
 		row = table[uidx]
 		res += ''.join([submissionCell(s, contest.contestType, showLinks) for s in row])
 		res += '</tr>'
@@ -278,12 +284,20 @@ def taskImport(request):
 		form = ImportForm()
 	return render(request, 'import.html', {'form':form})
 
+class UserCreateForm(UserCreationForm):
+	team_name = forms.CharField()
+	class Meta:
+		model = User
+		fields = ("username", "team_name")
+
 def register(request):
 	if request.method == 'POST':
-		form = UserCreationForm(request.POST)
+		form = UserCreateForm(request.POST)
 		if form.is_valid():
 			new_user = form.save()
+			# TODO: is there a way to do this without an extra transaction?  new_user.first_name = form.cleaned_data['team_name']
+			new_user.save()
 			return redirect('cses.views.index')
 	else:
-		form = UserCreationForm()
+		form = UserCreateForm()
 	return render(request, "register.html", {'form':form})
