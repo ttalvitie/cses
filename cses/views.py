@@ -295,7 +295,8 @@ def register(request):
 		form = UserCreateForm(request.POST)
 		if form.is_valid():
 			new_user = form.save()
-			# TODO: is there a way to do this without an extra transaction?  new_user.first_name = form.cleaned_data['team_name']
+			# TODO: is there a way to do this without an extra transaction?
+			new_user.first_name = form.cleaned_data['team_name']
 			new_user.save()
 			return redirect('cses.views.index')
 	else:
