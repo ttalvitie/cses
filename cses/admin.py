@@ -29,7 +29,8 @@ admin.site.register(Task, TaskAdmin)
 
 # Make user admin allow filtering by groups.
 class MyUserAdmin(UserAdmin):
-    list_filter = UserAdmin.list_filter + ('groups',)
+	list_filter = UserAdmin.list_filter + ('groups',)
+	list_display = ('username', 'first_name', 'is_staff', 'date_joined')
 
 admin.site.unregister(User)
 admin.site.register(User, MyUserAdmin)
