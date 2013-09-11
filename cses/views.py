@@ -190,7 +190,7 @@ def highlightedCode(submission):
 class CommentForm(forms.Form):
 	comment = forms.CharField(widget=widgets.Textarea)
 
-@require_login
+#@require_login
 def viewSubmission(request, subid):
 	subs = models.Submission.objects.filter(id=subid)
 	if not subs:
