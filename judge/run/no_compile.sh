@@ -1,2 +1,2 @@
 #!/bin/bash
-cp "$1" binary
+cp "$1" binary &> log
