@@ -2,7 +2,7 @@
 {% block title %} - {{ contest.name }}{% endblock %}
 
 {% block contestcontent %}
-<h1>Submission {{ submission.id }}: {{ submission.user }} - {{ submission.task }}</h1>
+<h1>Submission {{ submission.id }}: {% firstof submission.user.get_short_name submission.user.get_username %} - {{ submission.task }}</h1>
 <p>Evaluation: {{ submission.resultString }} </p>
 <p>Compiler output:<br/>
 <pre>
