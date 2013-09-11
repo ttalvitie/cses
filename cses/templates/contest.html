@@ -22,6 +22,7 @@
 		if (v.indexOf(".c") >= 0) r = "c";
 		if (v.indexOf(".cpp") >= 0) r = "c++";
 		if (v.indexOf(".java") >= 0) r = "java";
+		if (v.indexOf(".py") >= 0) r = "python2";
 		if (r == "") return;
 		for (var i = 0; i < l.length; i++) {
 			if (l.options[i].text == r) {

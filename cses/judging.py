@@ -79,12 +79,12 @@ class JudgeSubmission(Thread):
 			self.submission.judgeResult = Result.INTERNAL_ERROR
 			return False
 		if 'binary' not in binary:
-			print 'Compiling failed', binary['log']
+			print 'Compiling failed', binary['log'] if 'log' in binary else '(no log)'
 			self.submission.judgeResult = Result.COMPILE_ERROR
 			self.submission.compileResult = binary['log']
 			return False
 		self.submission.binary.save('binary', ContentFile(binary['binary']))
-		self.submission.compileResult = binary['log'] if binary['log'] else 'OK'
+		self.submission.compileResult = binary['log'] if 'log' in binary else 'OK'
 		self.submission.judgeResult = Result.JUDGING
 		return True
 
