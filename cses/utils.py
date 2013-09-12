@@ -6,7 +6,10 @@ from django.shortcuts import redirect
 
 def getUserContests(user):
 	"""Get queryset of contests available for 'user'."""
-	query = Q(active=True) & (Q(users=user) | Q(groups=user.groups.all()))
+	query = Q()
+	for group in user.groups.all():
+		query = query | Q(groups=group)
+	query = Q(active=True) & (Q(users=user) | query)
 	return Contest.objects.filter(query).distinct()
 
 def require_login(func):
