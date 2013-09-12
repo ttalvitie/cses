@@ -137,13 +137,10 @@ def makeScoreboard(contest, showLinks, user):
 	submits = contest.latestSubmits()
 	isIOI = contest.contestType==models.Contest.Type.IOI
 	userM = None
-	groupQuery = Q()
-	for group in contest.groups.all():
-		groupQuery = groupQuery | Q(groups=group)
 	if showLinks or not isIOI:
-		userM = User.objects.filter(groupQuery | Q(contest=contest)).distinct()
+		userM = User.objects.filter(Q(groups__in=contest.groups.all()) | Q(contest=contest)).distinct()
 	else:
-		userM = User.objects.filter((groupQuery | Q(contest=contest)) & Q(id=user.id)).distinct()
+		userM = User.objects.filter((Q(groups__in=contest.groups.all()) | Q(contest=contest)) & Q(id=user.id)).distinct()
 	if not user.is_superuser:
 		userM = filter(lambda u: not u.is_superuser , userM)
 	users = map(unicode, userM)
