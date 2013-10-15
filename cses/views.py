@@ -267,7 +267,7 @@ def importArchive(data, contest):
 @require_login
 def taskImport(request):
 	if not request.user.is_superuser:
-		raise Http404
+		return redirect('cses.views.index')
 	if request.method == 'POST':
 		form = ImportForm(request.POST, request.FILES)
 		if form.is_valid():
@@ -302,3 +302,23 @@ def register(request):
 	else:
 		form = UserCreateForm()
 	return render(request, "register.html", {'form':form})
+
+class RejudgeForm(forms.Form):
+	contest = forms.ModelChoiceField(queryset=Contest.objects.all(), required=True)
+
+@require_login
+def rejudge(request):
+	if not request.user.is_superuser:
+		return redirect('cses.views.index')
+	if request.method == 'POST':
+		form = RejudgeForm(request.POST)
+		if form.is_valid():
+			contest = form.cleaned_data['contest']
+			submits = contest.latestSubmits()
+			for task in submits:
+				for user in submits[task]:
+					(submission,_,_) = submits[task][user]
+					print 'rejudging submit:',submission.user, submission.task
+					judging.master.addSubmission(submission)
+	form = RejudgeForm()
+	return render(request, 'rejudge.html', {'form':form})

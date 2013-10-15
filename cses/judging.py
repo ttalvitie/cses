@@ -121,8 +121,7 @@ class JudgeSubmission(Thread):
 		memory = 150*1000 if language.name!='java' else 0
 		contestType = self.submission.contest.contestType
 		for case in cases:
-			result = models.Result(submission=self.submission, testcase=case, result=Result.JUDGING, time=0, memory=0)
-			result.save()
+			result = makeResult(self.submission, case)
 			runRes = self.judge.runScript([language.runner, self.submission.binary, case.input], task.timeLimit, memory)
 			if not 'stdout' in runRes or not 'stderr' in runRes or not 'status' in runRes:
 				status = Result.RUNTIME_ERROR
@@ -158,6 +157,17 @@ class JudgeSubmission(Thread):
 			totalScore = 1
 		self.submission.judgeResult = totalScore
 
+def makeResult(submission, case):
+	args={'result':Result.JUDGING, 'time':0, 'memory':0}
+	keyArgs={'submission':submission, 'testcase':case}
+	try:
+		result = models.Result.objects.get(**keyArgs)
+		result.save()
+	except models.Result.DoesNotExist:
+		args.update(keyArgs)
+		result = models.Result(**args)
+		result.save
+	return result
 
 def sendFile(sock, filename, fileField):
 	""" Send contents of file to sock """
