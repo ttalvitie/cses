@@ -1,47 +1,16 @@
 #!/usr/bin/python2
-from threading import *
-from socket import *
+import xmlrpclib
+from xmlrpclib import Binary
+from SimpleXMLRPCServer import SimpleXMLRPCServer
+from socket import gethostname
 import os.path
 import tempfile
 import shutil
 import os
 from subprocess import *
 from stat import *
-import cPickle as pickle
-import resource
 import sys
 import time
-
-def getLine(s, buf):
-	while '\n' not in buf:
-		get = s.recv(1024)
-		print 'data: '+get
-		if not get:
-			return (None,None)
-		buf += get
-	return buf.split('\n', 1)
-
-def hasFile(f):
-	return os.path.exists(f)
-
-def readFile(s, buf, size, name):
-	dirname = os.path.dirname(name)
-	if dirname and not os.path.exists(dirname):
-		os.makedirs(dirname)
-	with open(name, 'w') as f:
-		count = 0
-		while count + len(buf) < size:
-			count += len(buf)
-			f.write(buf)
-			buf = s.recv(1024)
-		remain = size-count
-		f.write(buf[:remain])
-		return buf[remain:]
-
-#def setLimits():
-#	resource.setrlimit(resource.RLIMIT_CPU, (1,1))
-#	memlimit = 100*1024*1024 # TODO: specify in some config file etc.
-#	resource.setrlimit(resource.RLIMIT_VMEM, (memlimit,memlimit))
 
 def setPathPermission(path, perm):
 	try:
@@ -52,10 +21,10 @@ def setPathPermission(path, perm):
 		pass
 
 # TODO: get as parameter
-
 runBoxed = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), 'run_boxed.sh')
 
-def runCommand(files, maxTime, maxMemory):
+
+def runProgram(files, maxTime, maxMemory):
 	origDir = os.getcwd()
 	try:
 		td = tempfile.mkdtemp()
@@ -98,7 +67,7 @@ def runCommand(files, maxTime, maxMemory):
 		for f in os.listdir(outdir):
 			call(['sudo', '-u', 'judgerun', 'chmod', '-R', '777', f])
 		outfiles = [f for f in os.listdir(outdir) if os.path.isfile(f)]
-		res = dict([(f,open(f,'r').read()) for f in outfiles])
+		res = dict([(f,Binary(open(f,'r').read())) for f in outfiles])
 		res['_retval'] = retval
 		res['_time'] = usedTime
 		return res
@@ -108,56 +77,22 @@ def runCommand(files, maxTime, maxMemory):
 		shutil.rmtree(td)
 		os.chdir(origDir)
 
-def handleLine(s, l, buf):
-	print 'got line '+l
-	parts = l.split(' ')
-	cmd = parts[0]
-	if cmd=='PING':
-		s.send("PONG\n")
-	elif cmd=='HAS':
-		res = ' '.join((str(int(hasFile(x))) for x in parts[1:]))
-		s.send(res+'\n')
-	elif cmd=='SEND':
-		name = parts[1]
-		length = int(parts[2])
-		buf = readFile(s, buf, length, name)
-		s.send('OK\n')
-	elif cmd=='RUN':
-		time = float(parts[1])
-		memory = int(parts[2])
-		files = parts[3:]
-		print 'Starting with files',files
-		out = runCommand(files, time, memory)
-		if out:
-			print 'run ok',out.keys()
-			outs = pickle.dumps(out)
-			print 'sending pickled',len(outs)
-			s.send("OK "+str(len(outs))+'\n'+outs)
-		else:
-			s.send("FAIL\n")
-	else:
-		print 'Unknown command '+cmd
-		s.send('FAIL\n')
-	return buf
+def ping():
+	return 'pong'
 
-def handleSocket(s, addr):
-	buf = ''
-	while True:
-		(line,buf) = getLine(s, buf)
-		if not line:
-			break
-		buf = handleLine(s, line, buf)
-	print 'disconnect'
+def hasFiles(names):
+	return [os.path.exists(x) for x in names]
 
-sock = socket(AF_INET, SOCK_STREAM)
-sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+def sendFile(name, data):
+	dirname = os.path.dirname(name)
+	if dirname and not os.path.exists(dirname):
+		os.makedirs(dirname)
+	with open(name, 'w') as f:
+		f.write(data.data)
+
 host = gethostname()
-print "binding to",host
-sock.bind((host, 21094))
-sock.listen(5)
-
-while True:
-	(csock,addr) = sock.accept()
-	t = Thread(target=handleSocket, args=(csock,addr))
-	t.daemon = True
-	t.start()
+server = SimpleXMLRPCServer((host, 21095), allow_none=True)
+for i in [ping, hasFiles, sendFile, runProgram]:
+	server.register_function(i, i.__name__)
+print 'Entering server loop'
+server.serve_forever()

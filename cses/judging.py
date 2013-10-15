@@ -1,9 +1,9 @@
-from socket import *
+import xmlrpclib
+from xmlrpclib import Binary
 import sys
 from threading import *
 import models
 from django.core.files.base import ContentFile
-import cPickle as pickle
 import os
 import os.path
 from result import Result
@@ -169,11 +169,6 @@ def makeResult(submission, case):
 		result.save
 	return result
 
-def sendFile(sock, filename, fileField):
-	""" Send contents of file to sock """
-	sock.send('SEND '+filename+' '+str(fileField.size)+'\n')
-	sock.send(fileField.read())
-
 def remoteFileName(name):
 	mid = 'cses_files/'
 	pos = name.find(mid)
@@ -188,69 +183,31 @@ def filePath(f):
 
 class JudgeHost:
 	def __init__(self, addr):
-		self.sock = socket(AF_INET, SOCK_STREAM)
-		self.sock.connect((addr, 21094))
-		self.buf = ''
 		self.addr = addr
+		self.reconnect()
 
 	def reconnect(self):
-		self.sock.close()
-		self.sock = socket(AF_INET, SOCK_STREAM)
-		self.sock.connect((self.addr, 21094))
+		self.proxy = xmlrpclib.ServerProxy('http://'+self.addr+':21095/', allow_none=True)
 
 	def runScript(self, files, time, memory=150*1000):
 		print 'running script',files,time,memory
 		paths = map(filePath, files)
 		remotePaths = map(remoteFileName, paths)
-		msg = ' '.join(remotePaths)
-		self.sock.send("HAS " + msg + '\n')
-		resline = self.getLine()
-		res = map(bool, map(int, resline.split(' ')))
-		print 'res',resline,res, len(files), len(res)
+		res = self.proxy.hasFiles(remotePaths)
+		print 'res',res, len(files), len(res)
 		for i in xrange(len(files)):
 			if not res[i]:
 				f = files[i]
 				print 'sending file',f.path
-				sendFile(self.sock, remotePaths[i], f)
-				line = self.getLine()
-				if line!='OK':
-					return
-#		msg = ' '.join([f[0]+' '+f[1] for f in files])
-		self.sock.send('RUN '+str(time)+' '+str(memory)+' '+msg+'\n')
-		res = self.getLine().split(' ')
-		if res[0]!='OK':
-			print 'Exec failure:',res
-			return
-		size = int(res[1])
-		print 'run res len',size
-		data = self.getData(size)
-		print 'download complete'
-		return pickle.loads(data)
-		return pickle.loads(self.getData(size))
-
-	def getLine(self):
-		while '\n' not in self.buf:
-			data = self.sock.recv(1024)
-			if not data:
-				raise IOError('No data received from connection')
-				return None
-			self.buf += data
-		res,self.buf = self.buf.split('\n', 1)
-		return res
-
-	def getData(self, size):
-		while len(self.buf) < size:
-#			self.buf += self.sock.recv(1024)
-			self.buf += self.sock.recv(size-len(self.buf))
-		res = self.buf[:size]
-		self.buf = self.buf[size:]
+				self.proxy.sendFile(remotePaths[i], Binary(f.read()))
+		res = self.proxy.runProgram(remotePaths, time, memory)
+		for i in res:
+			if isinstance(res[i], Binary):
+				res[i] = res[i].data
 		return res
 
 	def ping(self):
-		print 'pinging'
-		self.sock.send('PING\n')
-		res = self.getLine()
-		return res=='PONG'
+		return self.proxy.ping()=='pong'
 
 
 print('Starting judge master thread')
