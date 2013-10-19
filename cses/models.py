@@ -48,7 +48,7 @@ class Contest(models.Model):
 		return self.name
 
 	def latestSubmits(self):
-		submits = Submission.objects.filter(contest=self).order_by('time')
+		submits = Submission.objects.select_related('task', 'user').filter(contest=self).order_by('time')
 		res = {}
 		for s in submits:
 			task = s.task.name
