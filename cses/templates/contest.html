@@ -15,14 +15,27 @@
 <script>
 	var f = document.getElementById("id_file");
 	var l = document.getElementById("id_language");
+	var t = document.getElementById("id_task");
 
 	function copy() {
 		var v = f.value;
+		var mid = v.lastIndexOf('.');
+		if (mid<0) return;
+		var start = v.substr(0,mid);
+		var tmp = start.lastIndexOf('/');
+		if (tmp>=0) start = start.substr(tmp+1);
+		var tmp = start.lastIndexOf('\\');
+		if (tmp>=0) start = start.substr(tmp+1);
+		console.log(start);
+		for(var i=0; i < t.length; ++i) {
+			if (t.options[i].text == start) {
+				t.value = i;
+			}
+		}
+		var suffix = v.substr(mid+1);
 		var r = "";
-		if (v.indexOf(".c") >= 0) r = "c";
-		if (v.indexOf(".cpp") >= 0) r = "c++";
-		if (v.indexOf(".java") >= 0) r = "java";
-		if (v.indexOf(".py") >= 0) r = "python2";
+		{% for lang in form.fields.language.queryset %}if (suffix == "{{lang.suffix}}") r = "{{lang.name}}";
+		{% endfor %}
 		if (r == "") return;
 		for (var i = 0; i < l.length; i++) {
 			if (l.options[i].text == r) {

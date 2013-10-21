@@ -3,6 +3,8 @@ from django.contrib.auth.models import User, Group
 from django.core.files.storage import FileSystemStorage
 
 from django.conf import settings
+from uuid import uuid4
+import os.path
 import result
 fs = FileSystemStorage(location=settings.CSES_FILES_DIR)
 
@@ -26,6 +28,7 @@ class Language(models.Model):
 	name = models.CharField(max_length=255, unique=True)
 	compiler = models.FileField(storage=fs, upload_to='language_compilers/')
 	runner = models.FileField(storage=fs, upload_to='language_runners/')
+	suffix = models.CharField(max_length=16)
 
 	def __unicode__(self):
 		return self.name
@@ -66,12 +69,17 @@ class ContestTask(models.Model):
 	task = models.ForeignKey(Task)
 	order = models.IntegerField()
 
+def sourceUpload(instance, filename):
+	ext = instance.language.suffix
+	filename = '{}.{}'.format(uuid4().hex, ext)
+	return os.path.join('submission_sources/', filename)
+
 class Submission(models.Model):
 	task = models.ForeignKey(Task)
 	contest = models.ForeignKey(Contest)
 	user = models.ForeignKey(User)
 	language = models.ForeignKey(Language)
-	source = models.FileField(storage=fs, upload_to='submission_sources/')
+	source = models.FileField(storage=fs, upload_to=sourceUpload)
 	binary = models.FileField(storage=fs, upload_to='submission_binaries/', null=True)
 	compileResult = models.TextField(null=True)
 	judgeResult = models.IntegerField()
