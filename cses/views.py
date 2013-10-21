@@ -18,7 +18,7 @@ import models
 
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
-from pygments.lexers import guess_lexer_for_filename
+from pygments.lexers import guess_lexer_for_filename, TextLexer
 
 class LoginForm(forms.Form):
 	username = forms.CharField()
@@ -183,8 +183,11 @@ def scoreboard(request, cid):
 
 def highlightedCode(submission):
 	data = submission.source.read()
-	lexer = guess_lexer_for_filename(submission.source.path, data)
 	formatter = HtmlFormatter(linenos=True, noclasses=True)
+	try:
+		lexer = guess_lexer_for_filename(submission.source.path, data)
+	except:
+		lexer = TextLexer()
 	return highlight(data, lexer, formatter)
 
 class CommentForm(forms.Form):

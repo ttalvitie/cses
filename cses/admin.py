@@ -7,6 +7,7 @@ from pygments.formatters import HtmlFormatter
 from pygments.lexers import guess_lexer_for_filename
 from django.core.urlresolvers import reverse
 import sys
+import views
 
 admin.site.register(Language)
 admin.site.register(JudgeHost)
@@ -63,10 +64,7 @@ class SubmissionAdmin(admin.ModelAdmin):
 	list_display_links = ['task']
 
 	def sourceText(self, instance):
-		data = instance.source.read()
-		lexer = guess_lexer_for_filename(instance.source.path, data)
-		formatter = HtmlFormatter(linenos=True, noclasses=True)
-		return highlight(data, lexer, formatter)
+		return views.highlightedCode(instance)
 	sourceText.short_description = 'Source'
 	sourceText.allow_tags = True
 
