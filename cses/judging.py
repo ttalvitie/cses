@@ -2,12 +2,13 @@ import xmlrpclib
 from xmlrpclib import Binary
 import sys
 from threading import *
-import models
 from django.core.files.base import ContentFile
 import os
 import os.path
-from result import Result
 import time
+import traceback
+import models
+from result import Result
 
 def addJudge(host, master):
 	print 'Trying to connect to judgehost'
@@ -78,20 +79,20 @@ class JudgeSubmission(Thread):
 			print 'FAILURE'
 			self.submission.judgeResult = Result.INTERNAL_ERROR
 			return False
+		self.submission.compileResult= unicode(binary['log'] if 'log' in binary else 'OK', errors='ignore')
 		if 'binary' not in binary:
-			print 'Compiling failed', binary['log'] if 'log' in binary else '(no log)'
+			print 'Compiling failed'
 			self.submission.judgeResult = Result.COMPILE_ERROR
-			self.submission.compileResult = binary['log']
 			return False
 		self.submission.binary.save('binary', ContentFile(binary['binary']))
-		self.submission.compileResult = binary['log'] if 'log' in binary else 'OK'
-		self.submission.judgeResult = Result.JUDGING
 		return True
 
 	def run(self):
 		assert self.judge
 		# TODO: do only necessary work when restarting judge
 		try:
+			self.submission.judgeResult = Result.JUDGING
+			self.submission.save()
 			compileRes = self.compileSubmission()
 			self.submission.save()
 			if not compileRes:
@@ -106,10 +107,9 @@ class JudgeSubmission(Thread):
 			print 'judging finished'
 #		except IOError as e:
 		except:
-			print 'JUDGING FAILED', sys.exc_info()
-#			self.submission.judgeResult = Result.INTERNAL_ERROR
-#			self.judge.reconnect()
-			self.submission.judgeResult = Result.PENDING
+			print 'JUDGING FAILED'
+			traceback.print_exc()
+			self.submission.judgeResult = Result.INTERNAL_ERROR
 			self.submission.save()
 #			self.master.addSubmission(self.submission)
 			addJudge(self.judge.addr, self.master)

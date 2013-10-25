@@ -108,6 +108,8 @@ class Submission(models.Model):
 	def colorType(self):
 		if result.notDone(self.judgeResult):
 			return 'sol_notdone'
+		if self.judgeResult==result.Result.INTERNAL_ERROR:
+			return 'sol_nojudge'
 		if self.judgeResult<=0:
 			return 'sol_incorrect'
 		if self.contest.contestType==Contest.Type.IOI and self.judgeResult<TestCase.objects.filter(task=self.task).count():

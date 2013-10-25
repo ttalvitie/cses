@@ -14,10 +14,12 @@ numNames = dict([(getattr(Result,i),i.replace('_',' ')) for i in names])
 def toString(result):
 	if result not in numNames:
 		return str(result)
+	elif result==Result.INTERNAL_ERROR:
+		return 'LOL EI'
 	return numNames[result]
 
 def notDone(val):
-	return val==Result.INTERNAL_ERROR or val==Result.PENDING or val==Result.JUDGING
+	return val==Result.PENDING or val==Result.JUDGING
 
 def penaltyTime(val):
 	if notDone(val) or val==Result.COMPILE_ERROR:
