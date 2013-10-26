@@ -6,9 +6,21 @@ from django.conf import settings
 from uuid import uuid4
 import os.path
 import result
-fs = FileSystemStorage(location=settings.CSES_FILES_DIR)
 
-#class File
+class UniqueStorage(FileSystemStorage):
+	def get_available_name(self, name):
+		pos = name.find('.')
+		ext = ''
+		if pos > 0:
+			ext = name[pos:]
+			name = name[:pos]
+		return '%s_%s%s' % (name, uuid4().hex, ext)
+	def _save(self, name, content):
+		if self.exists(name):
+			self.delete(name)
+		return super(UniqueStorage, self)._save(name, content)
+fs = UniqueStorage(location=settings.CSES_FILES_DIR)
+
 
 class Task(models.Model):
 	name = models.CharField(max_length=255, unique=True)
@@ -71,7 +83,7 @@ class ContestTask(models.Model):
 
 def sourceUpload(instance, filename):
 	ext = instance.language.suffix
-	filename = '{}.{}'.format(uuid4().hex, ext)
+	filename = '{}.{}'.format('source', ext)
 	return os.path.join('submission_sources/', filename)
 
 class Submission(models.Model):
