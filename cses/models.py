@@ -15,10 +15,6 @@ class UniqueStorage(FileSystemStorage):
 			ext = name[pos:]
 			name = name[:pos]
 		return '%s_%s%s' % (name, uuid4().hex, ext)
-	def _save(self, name, content):
-		if self.exists(name):
-			self.delete(name)
-		return super(UniqueStorage, self)._save(name, content)
 fs = UniqueStorage(location=settings.CSES_FILES_DIR)
 
 
