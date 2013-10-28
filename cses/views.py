@@ -215,7 +215,8 @@ def viewSubmission(request, subid):
 			comment.save()
 	comments = models.Comment.objects.filter(submission=submission).order_by('time')
 	form = CommentForm()
-	return render(request, 'viewsubmission.html', {'submission': submission, 'contest':contest, 'code':code, 'comments': comments, 'commentform': form})
+	submissions = models.Submission.objects.filter(task=submission.task, user=submission.user, contest=submission.contest).order_by('-time')
+	return render(request, 'viewsubmission.html', {'submission': submission, 'contest':contest, 'code':code, 'comments': comments, 'commentform': form, 'submissions': submissions})
 
 
 class ImportForm(forms.Form):
