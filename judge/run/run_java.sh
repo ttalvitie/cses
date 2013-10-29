@@ -7,6 +7,6 @@ rm binary.zip
 MAINCLASS=`cat mainclass.txt`
 
 echo -3 > status
-java -Xmx150m $MAINCLASS < "$INPUT" > stdout 2> stderr && echo 1 > status
+"$RUNSAFE" java -Xmx150m $MAINCLASS < "$INPUT" > stdout 2> stderr && echo 1 > status
 rm *.class mainclass.txt
 exit 0

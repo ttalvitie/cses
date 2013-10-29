@@ -21,7 +21,9 @@ def setPathPermission(path, perm):
 		pass
 
 # TODO: get as parameter
-runBoxed = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), 'run_boxed.sh')
+origDir = os.path.dirname(os.path.abspath(sys.argv[0]))
+runBoxed = os.path.join(origDir, 'run_boxed.sh')
+restrictSyscalls = os.path.join(origDir, 'restrict_syscalls')
 
 
 def runProgram(files, maxTime, maxMemory):
@@ -51,7 +53,7 @@ def runProgram(files, maxTime, maxMemory):
 		os.chmod(td, 0777)
 		os.chmod(outdir, 0777)
 #		proc = Popen(tfiles, stdout=PIPE)
-		saferun = ['sudo', '-u', 'judgerun', runBoxed, str(int(maxTime+1)), str(maxMemory)]
+		saferun = ['sudo', '-u', 'judgerun', runBoxed, str(int(maxTime+1)), str(maxMemory), restrictSyscalls]
 		startTime = time.time()
 		retval = call(saferun + tfiles)
 		usedTime = time.time() - startTime
