@@ -9,6 +9,9 @@ import time
 import traceback
 import models
 from result import Result
+from hashlib import sha1
+import cPickle
+from django.conf import settings
 
 def addJudge(host, master):
 	print 'Trying to connect to judgehost'
@@ -173,7 +176,7 @@ def remoteFileName(name):
 	mid = 'cses_files/'
 	pos = name.find(mid)
 	# FIXME: this replacement might result in different paths becoming the same
-	return name[pos:].replace(' ', '__')
+	return str(name[pos:].replace(' ', '__'))
 
 def filePath(f):
 	return f.path
@@ -181,33 +184,54 @@ def filePath(f):
 #		return f.path
 #	return os.path.abspath(f.name)
 
+class SafeMethod:
+	def __init__(self, proxy, name):
+		self.method = proxy.__getattr__(name)
+
+	def __call__(self, *args):
+		judgeKey = ''
+		try:
+			judgeKey = settings.JUDGE_KEY
+		except AttributeError:
+			pass
+		print 'calling with args',args
+		key = sha1(judgeKey + cPickle.dumps(args)).hexdigest()
+		return self.method.__call__(key, *args)
+
+class SafeRPC:
+	def __init__(self, addr):
+		self.proxy = xmlrpclib.ServerProxy(addr, allow_none=True)
+
+	def __getattr__(self, name):
+		return SafeMethod(self.proxy, name)
+
 class JudgeHost:
 	def __init__(self, addr):
 		self.addr = addr
 		self.reconnect()
 
 	def reconnect(self):
-		self.proxy = xmlrpclib.ServerProxy('http://'+self.addr+':21095/', allow_none=True)
+		self.rpc = SafeRPC('http://'+self.addr+':21095/')
 
 	def runScript(self, files, time, memory=150*1000):
 		print 'running script',files,time,memory
 		paths = map(filePath, files)
 		remotePaths = map(remoteFileName, paths)
-		res = self.proxy.hasFiles(remotePaths)
+		res = self.rpc.hasFiles(remotePaths)
 		print 'res',res, len(files), len(res)
 		for i in xrange(len(files)):
 			if not res[i]:
 				f = files[i]
 				print 'sending file',f.path
-				self.proxy.sendFile(remotePaths[i], Binary(f.read()))
-		res = self.proxy.runProgram(remotePaths, time, memory)
+				self.rpc.sendFile(remotePaths[i], Binary(f.read()))
+		res = self.rpc.runProgram(remotePaths, time, memory)
 		for i in res:
 			if isinstance(res[i], Binary):
 				res[i] = res[i].data
 		return res
 
 	def ping(self):
-		return self.proxy.ping()=='pong'
+		return self.rpc.ping()=='pong'
 
 
 print('Starting judge master thread')
