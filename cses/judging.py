@@ -12,7 +12,6 @@ from result import Result
 from hashlib import sha1
 import cPickle
 from django.conf import settings
-import socket
 
 def addJudge(host, master):
 	print 'Trying to connect to judgehost'
