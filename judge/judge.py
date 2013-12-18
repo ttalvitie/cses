@@ -101,8 +101,6 @@ def runProgram(files, maxTime, maxMemory):
 		res['_retval'] = retval
 		res['_time'] = usedTime
 		return res
-	except OSError as e:
-		print 'Running script failed',e
 	finally:
 		shutil.rmtree(td)
 		os.chdir(origDir)
