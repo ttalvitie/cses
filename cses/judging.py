@@ -12,12 +12,14 @@ from result import Result
 from hashlib import sha1
 import cPickle
 from django.conf import settings
+import socket
 
 def addJudge(host, master):
 	print 'Trying to connect to judgehost'
 	while True:
 		try:
 			jhost = JudgeHost(host)
+			jhost.ping()
 			print 'Connect to judgehost succeeded'
 			master.addJudge(jhost)
 			break
@@ -93,6 +95,13 @@ class JudgeSubmission(Thread):
 	def run(self):
 		assert self.judge
 		# TODO: do only necessary work when restarting judge
+		try:
+			self.judge.ping()
+		except:
+			addJudge(self.judge.addr, self.master)
+			self.master.addSubmission(self.submission)
+			return
+
 		try:
 			self.submission.judgeResult = Result.JUDGING
 			self.submission.save()
@@ -184,26 +193,22 @@ def filePath(f):
 #		return f.path
 #	return os.path.abspath(f.name)
 
-class SafeMethod:
-	def __init__(self, proxy, name):
-		self.method = proxy.__getattr__(name)
-
-	def __call__(self, *args):
-		judgeKey = ''
-		try:
-			judgeKey = settings.JUDGE_KEY
-		except AttributeError:
-			pass
-		print 'calling with args',args
-		key = sha1(judgeKey + cPickle.dumps(args)).hexdigest()
-		return self.method.__call__(key, *args)
+judgeKey = ''
+try:
+	judgeKey = settings.JUDGE_KEY
+except AttributeError:
+	pass
 
 class SafeRPC:
 	def __init__(self, addr):
 		self.proxy = xmlrpclib.ServerProxy(addr, allow_none=True)
 
 	def __getattr__(self, name):
-		return SafeMethod(self.proxy, name)
+		def safeCall(*args):
+			key = sha1(judgeKey + cPickle.dumps(args)).hexdigest()
+			method = self.proxy.__getattr__(name)
+			return method(key, *args)
+		return safeCall
 
 class JudgeHost:
 	def __init__(self, addr):
@@ -231,7 +236,7 @@ class JudgeHost:
 		return res
 
 	def ping(self):
-		return self.rpc.ping()=='pong'
+		assert self.rpc.ping()=='pong', 'PING failed'
 
 
 print('Starting judge master thread')
