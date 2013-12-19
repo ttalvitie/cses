@@ -1,9 +1,7 @@
 import xmlrpclib
 from xmlrpclib import Binary
-import sys
-from threading import *
+from threading import Thread, Condition
 from django.core.files.base import ContentFile
-import os
 import os.path
 import time
 import traceback
@@ -34,6 +32,8 @@ class Master(Thread):
 		# TODO: check for judges not only at start
 #		self.judges = [JudgeHost(j.host) for j in models.JudgeHost.objects.filter(active=True)]
 		self.judges = []
+		for i in models.Submission.objects.filter(judgeResult=Result.PENDING):
+			self.addSubmission(i)
 		for j in models.JudgeHost.objects.filter(active=True):
 			t = Thread(target=addJudge, args=(j.host, self))
 			t.daemon = True
