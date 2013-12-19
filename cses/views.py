@@ -20,6 +20,9 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import guess_lexer_for_filename, TextLexer
 
+import logging
+logger = logging.getLogger(__name__)
+
 class LoginForm(forms.Form):
 	username = forms.CharField()
 	password = forms.CharField(widget=forms.PasswordInput)
@@ -71,7 +74,7 @@ def contest(request, contest):
 	if request.method == 'POST':
 		form = ContestSubmitForm(contest, request.POST, request.FILES)
 		if(form.is_valid() and form.cleaned_data['file']._size <= settings.CSES_MAX_SUBMISSION_SIZE):
-			print 'adding submission at time',datetime.now()
+			logger.info('adding submission at time %s',datetime.now())
 			# TODO: error reporting
 			submission = Submission(
 				task=form.cleaned_data['task'],
@@ -251,7 +254,7 @@ def importArchive(data, contest):
 		ct.save()
 		taskModels[t] = task
 
-	print tasks
+	logger.debug('%s', tasks)
 	nameset = set(z.namelist())
 	for out in sorted(z.namelist()):
 #		out = outfilename(i)
@@ -259,10 +262,10 @@ def importArchive(data, contest):
 		if i == None:
 			continue
 		if i not in nameset:
-			print 'Warning: no output-pair for input file',i
+			logger.warning('No output-pair for input file %s',i)
 			continue
 		task = i.split('/')[0]
-		print 'found input-output pair',i,out
+		logger.info('found input-output pair %s %s',i,out)
 		case = models.TestCase(task=taskModels[task])
 		case.input.save(i, ContentFile(z.read(i)))
 		case.output.save(out, ContentFile(z.read(out)))
@@ -322,7 +325,7 @@ def rejudge(request):
 			for task in submits:
 				for user in submits[task]:
 					(submission,_,_) = submits[task][user]
-					print 'rejudging submit:',submission.user, submission.task
+					logger.info('rejudging submit: %s %s',submission.user, submission.task)
 					judging.master.addSubmission(submission)
 	form = RejudgeForm()
 	return render(request, 'rejudge.html', {'form':form})

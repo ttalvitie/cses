@@ -10,14 +10,16 @@ from result import Result
 from hashlib import sha1
 import cPickle
 from django.conf import settings
+import logging
+logger = logging.getLogger(__name__)
 
 def addJudge(host, master):
-	print 'Trying to connect to judgehost'
+	logger.info('Trying to connect to judgehost')
 	while True:
 		try:
 			jhost = JudgeHost(host)
 			jhost.ping()
-			print 'Connect to judgehost succeeded'
+			logger.info('Connect to judgehost succeeded')
 			master.addJudge(jhost)
 			break
 		except:
@@ -80,12 +82,12 @@ class JudgeSubmission(Thread):
 		language = self.submission.language
 		binary = self.judge.runScript([language.compiler, self.submission.source], 30, 0)
 		if not binary:
-			print 'FAILURE'
+			logger.error('COMPILING FAILURE')
 			self.submission.judgeResult = Result.INTERNAL_ERROR
 			return False
 		self.submission.compileResult= unicode(binary['log'] if 'log' in binary else 'OK', errors='ignore')
 		if 'binary' not in binary:
-			print 'Compiling failed'
+			logger.info('Compiling failed')
 			self.submission.judgeResult = Result.COMPILE_ERROR
 			return False
 		self.submission.binary.save('binary', ContentFile(binary['binary']))
@@ -115,10 +117,10 @@ class JudgeSubmission(Thread):
 
 			self.submission.save()
 			self.master.addJudge(self.judge)
-			print 'judging finished'
+			logger.info('judging finished')
 #		except IOError as e:
 		except:
-			print 'JUDGING FAILED'
+			logger.error('JUDGING FAILED')
 			traceback.print_exc()
 			self.submission.judgeResult = Result.INTERNAL_ERROR
 			self.submission.save()
@@ -140,10 +142,10 @@ class JudgeSubmission(Thread):
 				result.stdout.save('stdout', ContentFile(runRes['stdout']))
 				result.stderr.save('stderr', ContentFile(runRes['stderr']))
 				result.time = runRes['_time']
-				print 'stderr:',runRes['stderr']
+				logger.debug('stderr: %s',runRes['stderr'])
 				status = int(runRes['status'])
 			if runRes['_retval']<0:
-				print 'bad retval',runRes['_retval']
+				logger.debug('bad retval %d',runRes['_retval'])
 				status = runRes['_retval']
 			if status<0:
 				result.result = status
@@ -158,7 +160,7 @@ class JudgeSubmission(Thread):
 			score = int(compareRes['result'])
 			result.result = score
 			result.save()
-			print 'judging file done with score',score
+			logger.info('judging file done with score %d',score)
 			if score>=0:
 				totalScore += score
 			elif contestType==models.Contest.Type.ICPC:
@@ -218,15 +220,15 @@ class JudgeHost:
 		self.rpc = SafeRPC('http://'+self.addr+':21095/')
 
 	def runScript(self, files, time, memory=150*1000):
-		print 'running script',files,time,memory
+		logger.debug('running script %s %d %d',files,time,memory)
 		paths = map(filePath, files)
 		remotePaths = map(remoteFileName, paths)
 		res = self.rpc.hasFiles(remotePaths)
-		print 'res',res, len(files), len(res)
+		logger.debug('res %s %d %d',res, len(files), len(res))
 		for i in xrange(len(files)):
 			if not res[i]:
 				f = files[i]
-				print 'sending file',f.path
+				logger.debug('sending file %s',f.path)
 				self.rpc.sendFile(remotePaths[i], Binary(f.read()))
 		res = self.rpc.runProgram(remotePaths, time, memory)
 		for i in res:
@@ -238,6 +240,6 @@ class JudgeHost:
 		assert self.rpc.ping()=='pong', 'PING failed'
 
 
-print('Starting judge master thread')
+logger.info('Starting judge master thread')
 master = Master()
 master.start()
