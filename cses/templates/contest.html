@@ -29,7 +29,7 @@
 		console.log(start);
 		for(var i=0; i < t.length; ++i) {
 			if (t.options[i].text == start) {
-				t.value = i;
+				t.value = t.options[i].value;
 			}
 		}
 		var suffix = v.substr(mid+1);
