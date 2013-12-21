@@ -14,16 +14,20 @@ import logging
 logger = logging.getLogger(__name__)
 
 def addJudge(host, master):
-	logger.info('Trying to connect to judgehost')
-	while True:
-		try:
-			jhost = JudgeHost(host)
-			jhost.ping()
-			logger.info('Connect to judgehost succeeded')
-			master.addJudge(jhost)
-			break
-		except:
-			time.sleep(5)
+	def add():
+		logger.info('Trying to connect to judgehost')
+		while True:
+			try:
+				jhost = JudgeHost(host)
+				jhost.ping()
+				logger.info('Connect to judgehost succeeded')
+				master.addJudge(jhost)
+				break
+			except:
+				time.sleep(5)
+	t = Thread(target=add)
+	t.daemon = True
+	t.start()
 
 class Master(Thread):
 	def __init__(self):
@@ -37,10 +41,7 @@ class Master(Thread):
 		for i in models.Submission.objects.filter(judgeResult=Result.PENDING):
 			self.addSubmission(i)
 		for j in models.JudgeHost.objects.filter(active=True):
-			t = Thread(target=addJudge, args=(j.host, self))
-			t.daemon = True
-			t.start()
-#			addJudge(j.host, self)
+			addJudge(j.host, self)
 #		self.reservedJudges = []
 
 	def run(self):
