@@ -6,4 +6,5 @@ export RUNSAFE=$3
 ulimit -t $1
 if [ $2 != 0 ]; then ulimit -u 10 -v $2; else ulimit -u 1000; fi
 ulimit -f 1000
+ulimit -s unlimited
 timeout $1 ${@:4}
