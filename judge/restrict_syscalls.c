@@ -57,7 +57,7 @@ static void parent(pid_t child_pid)
 
 		if (WIFEXITED(status)) {
 //			printf("Child exit with status %d\n", WEXITSTATUS(status));
-			exit(0);
+			exit(WEXITSTATUS(status));
 		}
 		if (WIFSIGNALED(status)) {
 			fprintf(stderr, "Child exit due to signal %d\n", WTERMSIG(status));
@@ -95,7 +95,10 @@ static void parent(pid_t child_pid)
 				}
 			}
 		} else {
-//			printf("Child stopped due to signal %d\n", WSTOPSIG(status));
+			if (WSTOPSIG(status) != 19) {
+				fprintf(stderr, "Child stopped due to signal %d\n", WSTOPSIG(status));
+				exit(1);
+			}
 		}
 //		fflush(stdout);
 
