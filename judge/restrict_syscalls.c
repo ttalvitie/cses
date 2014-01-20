@@ -32,6 +32,8 @@ static void child(int _, char** argv)
 
 const int allowed_syscalls[] = {
 	0,1,2,3,4,5,6,7,8,9,10,11,12,21,59,158,231,
+	// sync_with_stdio(0)
+	20,
 
 	// python2
 	218,273,13,14,97,16,89,257,78,79,107,102,108,104,87,
