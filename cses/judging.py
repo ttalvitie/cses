@@ -96,37 +96,38 @@ class JudgeSubmission(Thread):
 
 	def run(self):
 		assert self.judge
+		try:
+			self.runJudging()
+		finally:
+			addJudge(self.judge.addr, self.master)
+
+	def runJudging(self):
 		# TODO: do only necessary work when restarting judge
+		# Make sure the submission still exists in the DB
+		self.submission = models.Submission.objects.get(pk=self.submission.pk)
 		try:
 			self.judge.ping()
 		except:
-			addJudge(self.judge.addr, self.master)
 			self.master.addSubmission(self.submission)
-			return
-
+			raise
 		try:
 			self.submission.judgeResult = Result.JUDGING
 			self.submission.save()
 			compileRes = self.compileSubmission()
 			self.submission.save()
 			if not compileRes:
-				self.master.addJudge(self.judge)
 				return
 			task = self.submission.task
 			cases = models.TestCase.objects.filter(task=task)
 			self.judgeCases(cases)
 
 			self.submission.save()
-			self.master.addJudge(self.judge)
 			logger.info('judging finished')
-#		except IOError as e:
 		except:
 			logger.error('JUDGING FAILED')
-			traceback.print_exc()
+			logger.error(traceback.format_exc())
 			self.submission.judgeResult = Result.INTERNAL_ERROR
 			self.submission.save()
-#			self.master.addSubmission(self.submission)
-			addJudge(self.judge.addr, self.master)
 
 	def judgeCases(self, cases):
 		task = self.submission.task
