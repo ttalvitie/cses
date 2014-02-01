@@ -1,6 +1,6 @@
-{% extends "inpage.html" %}
+{% extends "page.html" %}
 
-{% block incontent %}
+{% block content %}
 <p>
 	<a href="{% url 'cses.views.contest' contest.id %}">Submit solution</a> |
 	<a href="{% url 'cses.views.submissions' contest.id %}">Submissions</a> |

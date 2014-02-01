@@ -1,6 +1,6 @@
-{% extends "inpage.html" %}
+{% extends "page.html" %}
 
-{% block incontent %}
+{% block content %}
 <h1>Import</h1>
 <form action="{% url 'cses.views.taskImport' %}" method="POST" enctype="multipart/form-data">
 {% csrf_token %}
