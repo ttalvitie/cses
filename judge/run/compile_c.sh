@@ -1,3 +1,3 @@
 #!/bin/bash
 
-gcc "$1" -Wall -O2 -o binary &> log
+gcc "$1" -Wall -O2 -lm -o binary &> log
