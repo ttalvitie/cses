@@ -6,7 +6,7 @@
 <h1>Select contest:</h1>
 <ul>
 {% for contest in contests %}
-<li><a href="{% url 'cses.views.contest' contest.id %}">{{ contest.name }}</a></li>
+<li><a href="{% url 'cses-contest' contest.id %}">{{ contest.name }}</a></li>
 {% endfor %}
 </ul>
 {% endblock %}

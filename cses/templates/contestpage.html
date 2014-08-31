@@ -2,9 +2,9 @@
 
 {% block content %}
 <p>
-	<a href="{% url 'cses.views.contest' contest.id %}">Submit solution</a> |
-	<a href="{% url 'cses.views.submissions' contest.id %}">Submissions</a> |
-	<a href="{% url 'cses.views.scoreboard' contest.id %}">Scoreboard</a> |
+	<a href="{% url 'cses-contest' contest.id %}">Submit solution</a> |
+	<a href="{% url 'cses-submissions' contest.id %}">Submissions</a> |
+	<a href="{% url 'cses-scoreboard' contest.id %}">Scoreboard</a> |
 	<a href="/logout/">Logout</a>
 </p>
 <hr>

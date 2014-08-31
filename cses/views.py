@@ -36,7 +36,7 @@ def login(request):
 			user = auth.authenticate(username=username, password=password)
 			if user is not None and user.is_active:
 				auth.login(request, user)
-				return redirect('cses.views.index')
+				return redirect('cses-index')
 	else:
 		form = LoginForm()
 	return render(request, "login.html", {'form': form})
@@ -45,7 +45,7 @@ def logout(request):
 	if request.method == 'GET':
 		auth.logout(request)
 
-	return redirect('cses.views.login')
+	return redirect('cses-login')
 
 @require_login
 def index(request):
@@ -109,7 +109,7 @@ def submissionCell(submitData, contestType, showLinks):
 	else:
 		content = str(submission.points())+'<br/>'+str(time)
 	if showLinks:
-		url = reverse('cses.views.viewSubmission', args=(submission.id,))
+		url = reverse('cses-viewSubmission', args=(submission.id,))
 		content = '<a href="%s">%s</a>' % (url, content)
 
 	return '<td class="%s" width="%d" height="%d">%s</td>' % (submission.colorType(), 40, 40, content)
@@ -178,7 +178,7 @@ def makeScoreboard(contest, showLinks, user):
 def scoreboard(request, cid):
 	contests = Contest.objects.filter(id=cid)
 	if len(contests) == 0:
-		return redirect('cses.views.index')
+		return redirect('cses-index')
 	contest = contests[0]
 	now = datetime.now()
 	dt = contest.endTime-now if now<contest.endTime else timedelta(seconds=0)
@@ -200,11 +200,11 @@ class CommentForm(forms.Form):
 def viewSubmission(request, subid):
 	subs = models.Submission.objects.filter(id=subid)
 	if not subs:
-		return redirect('cses.views.index')
+		return redirect('cses-index')
 	submission = subs[0]
 	contest = submission.contest
 	if datetime.now() <= contest.endTime and not request.user.is_superuser and submission.user!=request.user:
-		return redirect('cses.views.index')
+		return redirect('cses-index')
 	code = highlightedCode(submission)
 	if request.method=='POST':
 		form = CommentForm(request.POST)
@@ -274,7 +274,7 @@ def importArchive(data, contest):
 @require_login
 def taskImport(request):
 	if not request.user.is_superuser:
-		return redirect('cses.views.index')
+		return redirect('cses-index')
 	if request.method == 'POST':
 		form = ImportForm(request.POST, request.FILES)
 		if form.is_valid():
@@ -305,7 +305,7 @@ def register(request):
 			# TODO: is there a way to do this without an extra transaction?
 			new_user.first_name = form.cleaned_data['team_name']
 			new_user.save()
-			return redirect('cses.views.index')
+			return redirect('cses-index')
 	else:
 		form = UserCreateForm()
 	return render(request, "register.html", {'form':form})
@@ -316,7 +316,7 @@ class RejudgeForm(forms.Form):
 @require_login
 def rejudge(request):
 	if not request.user.is_superuser:
-		return redirect('cses.views.index')
+		return redirect('cses-index')
 	if request.method == 'POST':
 		form = RejudgeForm(request.POST)
 		if form.is_valid():

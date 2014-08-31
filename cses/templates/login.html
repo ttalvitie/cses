@@ -5,7 +5,7 @@
 {% block content %}
 <h1>Login</h1>
 
-<form action="{% url "cses.views.login" %}" method="POST">
+<form action="{% url "cses-login" %}" method="POST">
 {% csrf_token %}
 <p>Username: <br>
 {{ form.username }}</p>
@@ -13,5 +13,5 @@
 {{ form.password }}</p>
 <input type="submit" value="Login" />
 </form>
-<p><a href="{% url 'cses.views.register' %}">Register</a></p>
+<p><a href="{% url 'cses-register' %}">Register</a></p>
 {% endblock %}

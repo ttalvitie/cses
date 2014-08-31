@@ -14,7 +14,7 @@
 <tr class="{{ submission.colorType }}">
 	<td>{{ submission.time }}</td>
 	<td>{{ submission.task }}</td>
-	<td><a href="{% url 'cses.views.viewSubmission' submission.id %}">
+	<td><a href="{% url 'cses-viewSubmission' submission.id %}">
 			<!--			<span class="sol {{ submission.colorType }}"> -->
 				{{ submission.resultString }}
 				<!--			</span> -->

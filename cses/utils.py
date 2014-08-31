@@ -15,7 +15,7 @@ def require_login(func):
 		if request.user.is_authenticated():
 			return func(request, *args, **kwargs)
 		else:
-			return redirect('cses.views.login')
+			return redirect('cses-login')
 	return wrapper
 
 def contest_page(func):
@@ -26,7 +26,7 @@ def contest_page(func):
 		contest_id = int(contest_id)
 		matches = getUserContests(request.user).filter(id=contest_id)
 		if len(matches) == 0:
-			return redirect('cses.views.index')
+			return redirect('cses-index')
 		contest = matches[0]
 		
 		return func(request, contest, *args, **kwargs)
