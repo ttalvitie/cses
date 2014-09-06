@@ -219,7 +219,7 @@ class JudgeHost:
 		self.reconnect()
 
 	def reconnect(self):
-		self.rpc = SafeRPC('http://'+self.addr+':21095/')
+		self.rpc = SafeRPC('http://'+self.addr+'/')
 
 	def runScript(self, files, time, memory=150*1000):
 		logger.debug('running script %s %d %d',files,time,memory)

@@ -63,7 +63,7 @@ class ContestSubmitForm(forms.Form):
 
 	def __init__(self, contest, *args, **kwargs):
 		super(ContestSubmitForm, self).__init__(*args, **kwargs)
-		self.fields['task'].queryset = contest.tasks.all()
+		self.fields['task'].queryset = contest.tasks.all().order_by('contesttask__order')
 
 @contest_page
 def contest(request, contest):
@@ -240,13 +240,16 @@ def infilename(infile):
 def importArchive(data, contest):
 	z = ZipFile(data, 'r')
 	tasks = list(set([i.split('/')[0] for i in z.namelist()]))
+	convert = lambda text: int(text) if text.isdigit() else text.lower()
+	alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+	tasks.sort(key = alphanum_key)
 	evaluator = File(open('../judge/run/compare.sh','r'))
 	taskModels = {}
 	for i in xrange(len(tasks)):
 		t = tasks[i]
 		task = models.Task(
 				name=t,
-				evaluator=evaluator,
+				evaluator=contest.name + "_" + evaluator,
 				timeLimit=1,
 				score=100)
 		task.save()
@@ -256,7 +259,7 @@ def importArchive(data, contest):
 
 	logger.debug('%s', tasks)
 	nameset = set(z.namelist())
-	for out in sorted(z.namelist()):
+	for out in sorted(z.namelist(), key = alphanum_key):
 #		out = outfilename(i)
 		i = infilename(out)
 		if i == None:
