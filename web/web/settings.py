@@ -1,6 +1,6 @@
 # Django settings for web project.
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -22,9 +22,7 @@ DATABASES = {
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.4/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['sharph.kapsi.fi']
-
-USE_X_FORWARDED_HOST = True
+ALLOWED_HOSTS = []
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -94,8 +92,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'oo0xB3Z8wqOstQ8mmcK7RvHKAZQhdfZo2nFgHISaYZJEOKI0G8mElL5PM9QjcClYPVOp72uA9egLrNVh4uEVVZR8NBAh9T0wy3f7z3ZwRsASQQTu8UvkhBWHCPcmQmNJ'
-JUDGE_KEY = 'qImmgah7xrwyZqs7IJbZG3pMQbjrFHN3H7JpjqVsGc94EuuMRkvWP94APijs5NAl8blI0AEHwCVoFnKObRKyx3AA2ce8NRq0BcFZO6t2XMAiN2ecTMfRsEAswUu1O3Kf'
+# SECRET_KEY = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
