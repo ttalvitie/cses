@@ -20,6 +20,8 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import guess_lexer_for_filename, TextLexer
 
+import re
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -248,8 +250,8 @@ def importArchive(data, contest):
 	for i in xrange(len(tasks)):
 		t = tasks[i]
 		task = models.Task(
-				name=t,
-				evaluator=contest.name + "_" + evaluator,
+				name=contest.name+"_"+t,
+				evaluator=evaluator,
 				timeLimit=1,
 				score=100)
 		task.save()
